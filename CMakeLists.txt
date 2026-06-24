@@ -9,46 +9,46 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${OUTPUT_DIRECTORY}")
 
 project(bbui)
 
-file(GLOB SRC_FILES ${CMAKE_SOURCE_DIR}/src/*.cpp ${CMAKE_SOURCE_DIR}/src/*/*.cpp)
+file(GLOB SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/*/*.cpp)
 
-add_library(bbui SHARED ${SRC_FILES} ${CMAKE_SOURCE_DIR}/lib/glad.c ${CMAKE_SOURCE_DIR}/lib/stb_image.cpp)
+add_library(bbui SHARED ${SRC_FILES} ${CMAKE_CURRENT_SOURCE_DIR}/lib/glad.c ${CMAKE_CURRENT_SOURCE_DIR}/lib/stb_image.cpp)
 if(WIN32)
-	target_link_libraries(bbui PRIVATE ${CMAKE_SOURCE_DIR}/lib/GLFW/lib-vc2019/glfw3.lib)
+    target_link_libraries(bbui PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/lib/GLFW/lib-vc2019/glfw3.lib)
 else()
-	target_link_libraries(bbui PRIVATE glfw pthread)
+    target_link_libraries(bbui PRIVATE glfw pthread)
 endif()
-target_include_directories(bbui PRIVATE ${CMAKE_SOURCE_DIR}/inc)
-target_include_directories(bbui PRIVATE ${CMAKE_SOURCE_DIR}/lib)
+target_include_directories(bbui PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/inc)
+target_include_directories(bbui PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
 set_property(GLOBAL PROPERTY LINKER_LANGUAGE CXX)
 set_property(TARGET bbui PROPERTY CXX_STANDARD 20)
 if(WIN32)
-	set(CMAKE_C_COMPILER "cl.exe")
-	set(CMAKE_CXX_COMPILER "cl.exe")
+    set(CMAKE_C_COMPILER "cl.exe")
+    set(CMAKE_CXX_COMPILER "cl.exe")
 
-	add_compile_options("/ZI")
-	add_link_options("/DEBUG")
+    add_compile_options("/ZI")
+    add_link_options("/DEBUG")
 else()
-	set(CMAKE_C_COMPILER "/usr/bin/clang")
-	set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
+    set(CMAKE_C_COMPILER "/usr/bin/clang")
+    set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
 
-	add_compile_options("-g")
+    add_compile_options("-g")
     add_link_options("-g")
     add_compile_options("-O3")
     add_compile_options(
-			-fno-delete-null-pointer-checks
-			-Wno-tautological-undefined-compare
-			-Wno-unused-parameter
-			-Wno-unused-variable
-			-Wno-missing-field-initializers
-	)
+        -fno-delete-null-pointer-checks
+        -Wno-tautological-undefined-compare
+        -Wno-unused-parameter
+        -Wno-unused-variable
+        -Wno-missing-field-initializers
+    )
 endif()
 
 macro(get_file_content filename content_var)
-	file(READ ${filename} temporary_var)
-	string(REGEX REPLACE "#include *\".+\"\n" "" temporary_var "${temporary_var}")
-	string(REGEX REPLACE "#pragma *[^\n]*\n" "" temporary_var "${temporary_var}")
-	string(APPEND ${content_var} "${temporary_var}")
+    file(READ ${filename} temporary_var)
+    string(REGEX REPLACE "#include *\".+\"\n" "" temporary_var "${temporary_var}")
+    string(REGEX REPLACE "#pragma *[^\n]*\n" "" temporary_var "${temporary_var}")
+    string(APPEND ${content_var} "${temporary_var}")
 endmacro()
 
 set(COMBINED_FILE "/*
@@ -74,35 +74,34 @@ set(COMBINED_FILE "/*
 #endif
 
 #pragma region BBUI_DECLARATIONS\n\n")
-get_file_content(${CMAKE_SOURCE_DIR}/inc/window.h COMBINED_FILE)
-get_file_content(${CMAKE_SOURCE_DIR}/inc/rendering.h COMBINED_FILE)
-get_file_content(${CMAKE_SOURCE_DIR}/inc/canvas.h COMBINED_FILE)
-get_file_content(${CMAKE_SOURCE_DIR}/inc/components.h COMBINED_FILE)
+get_file_content(${CMAKE_CURRENT_SOURCE_DIR}/inc/window.h COMBINED_FILE)
+get_file_content(${CMAKE_CURRENT_SOURCE_DIR}/inc/rendering.h COMBINED_FILE)
+get_file_content(${CMAKE_CURRENT_SOURCE_DIR}/inc/canvas.h COMBINED_FILE)
+get_file_content(${CMAKE_CURRENT_SOURCE_DIR}/inc/components.h COMBINED_FILE)
 string(APPEND COMBINED_FILE "\n\n#pragma endregion BBUI_DECLARATIONS
 
 #pragma region BBUI_IMPLEMENTATIONS
 #if defined(BBUI_IMPLEMENTATION)\n\n")
-get_file_content(${CMAKE_SOURCE_DIR}/src/window.cpp COMBINED_FILE)
-get_file_content(${CMAKE_SOURCE_DIR}/src/backend_opengl.cpp COMBINED_FILE)
+get_file_content(${CMAKE_CURRENT_SOURCE_DIR}/src/window.cpp COMBINED_FILE)
+get_file_content(${CMAKE_CURRENT_SOURCE_DIR}/src/backend_opengl.cpp COMBINED_FILE)
 string(APPEND COMBINED_FILE "\n\n#endif
 #pragma endregion BBUI_IMPLEMENTATIONS\n")
 
-file(WRITE ${CMAKE_SOURCE_DIR}/export/bbui_headeronly.h "${COMBINED_FILE}")
+file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/export/bbui_headeronly.h "${COMBINED_FILE}")
 
 if(WIN32)
-	set(PLATFORM Windows)
+    set(PLATFORM Windows)
 else()
-	set(PLATFORM Linux)
+    set(PLATFORM Linux)
 endif()
 set(TAR_OUTPUT
-	"${CMAKE_SOURCE_DIR}/export/bbui_prebuilt_${PLATFORM}.zip"
+    "${CMAKE_CURRENT_SOURCE_DIR}/export/bbui_prebuilt_${PLATFORM}.zip"
 )
 
-add_custom_target(bbui_export ALL
-	DEPENDS bbui
-	COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/staging
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/inc/ ${CMAKE_BINARY_DIR}/staging
-	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:bbui> ${CMAKE_BINARY_DIR}/staging
-	COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_BINARY_DIR}/staging
-		${CMAKE_COMMAND} -E tar cfv ${TAR_OUTPUT} --format=zip .
+add_custom_target(bbui_export
+    DEPENDS bbui
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/staging
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/inc/ ${CMAKE_CURRENT_BINARY_DIR}/staging
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:bbui> ${CMAKE_CURRENT_BINARY_DIR}/staging
+    COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/staging ${CMAKE_COMMAND} -E tar cfv ${TAR_OUTPUT} --format=zip .
 )
