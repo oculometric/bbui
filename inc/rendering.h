@@ -14,6 +14,9 @@ struct Texture final
 {
     const unsigned char* data;
     const size_t size;
+
+    static Texture getDefaultSliceTexture();
+    static Texture getDefaultIconTexture();
 };
 
 struct Font final
@@ -21,6 +24,9 @@ struct Font final
     Texture regular_atlas;
     Texture bold_atlas;
     glm::vec2 glyph_size;
+
+    static Font getRobotoFont();
+    static Font getIBMFont();
 };
 
 struct Vertex final
