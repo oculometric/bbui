@@ -89,7 +89,6 @@ string(APPEND COMBINED_FILE "\n\n#endif
 
 file(WRITE ${CMAKE_SOURCE_DIR}/export/bbui_headeronly.h "${COMBINED_FILE}")
 
-string(TIMESTAMP TODAY "%d_%m_%Y %H.%M.%S")
 if(WIN32)
 	set(PLATFORM Windows)
 else()
