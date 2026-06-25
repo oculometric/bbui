@@ -57,7 +57,7 @@ public:
     virtual void draw(std::shared_ptr<Window> window) const {};
 };
 
-class Backend_OpenGL final : Backend
+class Backend_OpenGL final : public Backend
 {
 private:
     typedef unsigned int Handle;
@@ -95,7 +95,10 @@ class Renderer final : std::enable_shared_from_this<Renderer>
 public:
     struct Backing final
     {
+        friend class Renderer;
+
     private:
+        std::weak_ptr<Renderer> renderer;
         uint32_t source_id = 0;
         Index vertex_start;
         Index index_start;
@@ -103,7 +106,7 @@ public:
 
     public:
         void ensure(Index capacity);
-        void write(glm::vec2 p1, glm::vec2 p2, glm::vec2 p3, glm::vec2 p4, glm::vec2 uv_tl, glm::vec2 uv_br,
+        void write(glm::vec2 p1, glm::vec2 p2, glm::vec2 p3, glm::vec2 p4, float z, glm::vec2 uv_tl, glm::vec2 uv_br,
             glm::vec4 colour_1, glm::vec4 colour_2, glm::vec4 data_1, glm::vec4 data_2, Index offset = 0);
         void release();
     };
@@ -113,14 +116,11 @@ public:
         friend class Renderer;
 
     protected:
+        Backing backing;
         glm::vec3 position = { 0, 0, 0 };
         glm::vec2 size     = { 10, 10 };
         glm::vec4 colour_a = { 1, 1, 1, 1 };
         glm::vec4 colour_b = { 0, 0, 0, 0 };
-
-    private:
-        std::weak_ptr<Renderer> renderer;
-        Backing backing;
 
     public:
         virtual ~Object() {};
@@ -272,14 +272,14 @@ public:
     Renderer(Renderer&& other)            = delete;
     void operator=(const Renderer& other) = delete;
     void operator=(Renderer&& other)      = delete;
-    ~Renderer();
+    ~Renderer()                           = default;
 
     std::shared_ptr<Text> createText();
     std::shared_ptr<NineSlice> createNineSlice();
     std::shared_ptr<Icon> createIcon();
     std::shared_ptr<Quad> createQuad();
 
-    void draw(std::shared_ptr<Window> window) const;
+    void draw(std::shared_ptr<Window> window);
 };
 
 // TODO: ability to configure whether we use blended alpha or dithered alpha?
