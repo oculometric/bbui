@@ -12,6 +12,7 @@ std::shared_ptr<Renderer::Text> Renderer::createText()
 {
     auto object              = std::make_shared<Text>();
     object->backing.renderer = this->shared_from_this();
+    // TODO: add the backing to a list of backings so that we can modify them when reallocation happens!!!
     return object;
 }
 
