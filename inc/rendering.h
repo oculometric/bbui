@@ -93,6 +93,12 @@ class Renderer final : std::enable_shared_from_this<Renderer>
     friend class Backing;
 
 public:
+    // TODO: okay, so backing data should be entirely internal. all the object has is the id, which may or
+    // may not be valid, and the functions for ensure, write, and release, are stored on the renderer; the
+    // renderer can then also handle modifying backing data when shuffling everything backwards when we hit
+    // max dead quads
+    // TODO: also, think about when the text, nineslice, etc are allocated - we will need the renderer at
+    // alloc time!
     struct Backing final
     {
         friend class Renderer;
