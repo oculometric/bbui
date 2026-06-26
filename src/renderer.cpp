@@ -12,7 +12,6 @@ std::shared_ptr<Renderer::Text> Renderer::createText()
 {
     auto object              = std::make_shared<Text>();
     object->backing.renderer = this->shared_from_this();
-    // TODO: add the backing to a list of backings so that we can modify them when reallocation happens!!!
     return object;
 }
 
@@ -41,7 +40,8 @@ void Renderer::draw(std::shared_ptr<Window> window)
 {
     if (source_modified) backend->mesh(vertices, indices);
     source_modified = false;
-    // TODO: handle realloc upon max dead quads
+    // TODO: handle realloc upon max dead quads - move everything backwards and modify the backing data to
+    // preserve the timeline
     backend->bind(window);
     backend->draw(window);
 }

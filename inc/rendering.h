@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -99,18 +100,18 @@ public:
     // max dead quads
     // TODO: also, think about when the text, nineslice, etc are allocated - we will need the renderer at
     // alloc time!
+
     struct Backing final
     {
         friend class Renderer;
 
     private:
+        uint32_t id;
         std::weak_ptr<Renderer> renderer;
-        uint32_t source_id = 0;
-        Index vertex_start;
-        Index index_start;
-        Index quad_count;
 
     public:
+        ~Backing() { release(); }
+
         void ensure(Index capacity);
         void write(glm::vec2 p1, glm::vec2 p2, glm::vec2 p3, glm::vec2 p4, float z, glm::vec2 uv_tl,
             glm::vec2 uv_br, glm::vec4 colour_1, glm::vec4 colour_2, glm::vec4 data_1, glm::vec4 data_2,
@@ -118,7 +119,7 @@ public:
         void release();
     };
 
-    class Object
+    class Primitive
     {
         friend class Renderer;
 
@@ -130,7 +131,7 @@ public:
         glm::vec4 colour_b = { 0, 0, 0, 0 };
 
     public:
-        virtual ~Object() {};
+        virtual ~Primitive() {};
 
         void setPosition(glm::vec3 _position);
         void setSize(glm::vec2 _size);
@@ -139,14 +140,14 @@ public:
         virtual void update();
 
     private:
-        Object()                            = default;
-        Object(const Object& other)         = delete;
-        Object(Object&& other)              = delete;
-        void operator=(const Object& other) = delete;
-        void operator=(Object&& other)      = delete;
+        Primitive()                            = default;
+        Primitive(const Primitive& other)      = delete;
+        Primitive(Primitive&& other)           = delete;
+        void operator=(const Primitive& other) = delete;
+        void operator=(Primitive&& other)      = delete;
     };
 
-    class Text final : public Object
+    class Text final : public Primitive
     {
     public:
         enum Align : uint8_t
@@ -180,7 +181,7 @@ public:
         Format format;
 
     public:
-        virtual ~Text() {};
+        ~Text() override {};
 
         void setForeground(glm::vec4 _colour);
         void setBackground(glm::vec4 _colour);
@@ -188,10 +189,10 @@ public:
         void setFormat(const Format& _format);
 
     protected:
-        virtual void update();
+        void update() override; // TODO:
     };
 
-    class NineSlice final : public Object
+    class NineSlice final : public Primitive
     {
     public:
         enum Borders : uint8_t
@@ -207,11 +208,11 @@ public:
         };
 
     protected:
-        int pattern_index;
-        Borders borders;
+        int pattern_index = 0;
+        Borders borders   = NS_BORDERS_ALL;
 
     public:
-        virtual ~NineSlice() {};
+        ~NineSlice() override {};
 
         void setFill(glm::vec4 _colour);
         void setBorder(glm::vec4 _colour);
@@ -219,35 +220,38 @@ public:
         void setBorders(Borders _borders);
 
     protected:
-        virtual void update();
+        void update() override;
+
+    private:
+        NineSlice() { colour_b = { 1, 1, 1, 1 }; }
     };
 
-    class Icon final : public Object
+    class Icon final : public Primitive
     {
     protected:
-        int icon_index;
+        int icon_index = 0;
 
     public:
-        virtual ~Icon() {};
+        ~Icon() override {};
 
         void setForeground(glm::vec4 _colour);
         void setBackground(glm::vec4 _colour);
         void setIconIndex(int _icon_index);
 
     protected:
-        virtual void update();
+        void update() override;
     };
 
-    class Quad final : public Object
+    class Quad final : public Primitive
     {
     protected:
-        glm::vec2 uv_top_left;
-        glm::vec2 uv_bottom_right;
-        glm::vec4 data_1;
-        glm::vec4 data_2;
+        glm::vec2 uv_top_left     = { 0, 0 };
+        glm::vec2 uv_bottom_right = { 1, 1 };
+        glm::vec4 data_1          = { 0, 0, 0, 0 };
+        glm::vec4 data_2          = { 0, 0, 0, 0 };
 
     public:
-        virtual ~Quad() {};
+        ~Quad() override {};
 
         void setColourA(glm::vec4 _colour_a);
         void setColourB(glm::vec4 _colour_b);
@@ -257,7 +261,15 @@ public:
         void setData2(glm::vec4 _data_2);
 
     protected:
-        virtual void update();
+        void update() override;
+    };
+
+private:
+    struct BackingInternal final
+    {
+        Index vertex_start;
+        Index index_start;
+        Index quad_count;
     };
 
 private:
@@ -268,7 +280,8 @@ private:
     const size_t max_dead_quads = 256;
     size_t dead_quads           = 0;
     bool source_modified        = false;
-    uint32_t current_source_id  = 0;
+    std::map<uint32_t, BackingInternal> backing_map;
+    uint32_t next_backing_id = 3;
 
 public:
     glm::mat3 transform = glm::mat3(1.0);
