@@ -128,11 +128,7 @@ Window::Window(const Texture& icon)
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
             throw std::runtime_error("failed to initialize GLAD");
     }
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_GEQUAL);
-    glDepthRange(-1000.0f, 1000.0f);
-    glDisable(GL_CULL_FACE);
-
+    
     // insert into the window map for input redirection
     windows[window] = this;
 }

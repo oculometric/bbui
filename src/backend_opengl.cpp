@@ -374,6 +374,10 @@ void Backend_OpenGL::bind(std::shared_ptr<Window> window, std::shared_ptr<Render
     if (renderer->anti_alias) glEnable(GL_MULTISAMPLE);
     else
         glDisable(GL_MULTISAMPLE);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_GEQUAL);
+    glDepthRange(-1000.0f, 1000.0f);
+    glDisable(GL_CULL_FACE);
 }
 
 void Backend_OpenGL::draw(std::shared_ptr<Window> window) const
