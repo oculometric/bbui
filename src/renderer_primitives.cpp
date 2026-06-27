@@ -22,55 +22,55 @@ void Renderer::Primitive::update()
         colour_a, colour_b, { 4, 0, 0, 0 }, { 0, 0, 0, 0 });
 }
 
-void Renderer::Text::setForeground(glm::vec4 _colour)
+void Renderer::Text_t::setForeground(glm::vec4 _colour)
 {
     colour_a = _colour;
     update();
 }
 
-void Renderer::Text::setBackground(glm::vec4 _colour)
+void Renderer::Text_t::setBackground(glm::vec4 _colour)
 {
     colour_b = _colour;
     update();
 }
 
-void Renderer::Text::setText(const std::string& _content)
+void Renderer::Text_t::setText(const std::string& _content)
 {
     content = _content;
     update();
 }
 
-void Renderer::Text::setFormat(const Format& _format)
+void Renderer::Text_t::setFormat(const Format& _format)
 {
     format = _format;
     update();
 }
 
-void Renderer::NineSlice::setFill(glm::vec4 _colour)
+void Renderer::NineSlice_t::setFill(glm::vec4 _colour)
 {
     colour_a = _colour;
     update();
 }
 
-void Renderer::NineSlice::setBorder(glm::vec4 _colour)
+void Renderer::NineSlice_t::setBorder(glm::vec4 _colour)
 {
     colour_b = _colour;
     update();
 }
 
-void Renderer::NineSlice::setPattern(int _pattern_index)
+void Renderer::NineSlice_t::setPattern(int _pattern_index)
 {
     pattern_index = _pattern_index;
     update();
 }
 
-void Renderer::NineSlice::setBorders(Borders _borders)
+void Renderer::NineSlice_t::setBorders(Borders _borders)
 {
     borders = _borders;
     update();
 }
 
-void Renderer::NineSlice::update()
+void Renderer::NineSlice_t::update()
 {
     backing.ensure(1);
     glm::vec2 p = position;
@@ -79,25 +79,25 @@ void Renderer::NineSlice::update()
         { static_cast<float>(borders), 0, 0, 0 });
 }
 
-void Renderer::Icon::setForeground(glm::vec4 _colour)
+void Renderer::Icon_t::setForeground(glm::vec4 _colour)
 {
     colour_a = _colour;
     update();
 }
 
-void Renderer::Icon::setBackground(glm::vec4 _colour)
+void Renderer::Icon_t::setBackground(glm::vec4 _colour)
 {
     colour_b = _colour;
     update();
 }
 
-void Renderer::Icon::setIconIndex(int _icon_index)
+void Renderer::Icon_t::setIconIndex(int _icon_index)
 {
     icon_index = _icon_index;
     update();
 }
 
-void Renderer::Icon::update()
+void Renderer::Icon_t::update()
 {
     backing.ensure(1);
     glm::vec2 p = position;
@@ -105,43 +105,43 @@ void Renderer::Icon::update()
         colour_a, colour_b, { 1, size, static_cast<float>(icon_index) }, { 0, 0, 0, 0 });
 }
 
-void Renderer::Quad::setColourA(glm::vec4 _colour_a)
+void Renderer::Quad_t::setColourA(glm::vec4 _colour_a)
 {
     colour_a = _colour_a;
     update();
 }
 
-void Renderer::Quad::setColourB(glm::vec4 _colour_b)
+void Renderer::Quad_t::setColourB(glm::vec4 _colour_b)
 {
     colour_b = _colour_b;
     update();
 }
 
-void Renderer::Quad::setUVTopLeft(glm::vec2 _uv_top_left)
+void Renderer::Quad_t::setUVTopLeft(glm::vec2 _uv_top_left)
 {
     uv_top_left = _uv_top_left;
     update();
 }
 
-void Renderer::Quad::setUVBottomRight(glm::vec2 _uv_bottom_right)
+void Renderer::Quad_t::setUVBottomRight(glm::vec2 _uv_bottom_right)
 {
     uv_bottom_right = _uv_bottom_right;
     update();
 }
 
-void Renderer::Quad::setData1(glm::vec4 _data_1)
+void Renderer::Quad_t::setData1(glm::vec4 _data_1)
 {
     data_1 = _data_1;
     update();
 }
 
-void Renderer::Quad::setData2(glm::vec4 _data_2)
+void Renderer::Quad_t::setData2(glm::vec4 _data_2)
 {
     data_2 = _data_2;
     update();
 }
 
-void Renderer::Quad::update()
+void Renderer::Quad_t::update()
 {
     backing.ensure(1);
     glm::vec2 p = position;

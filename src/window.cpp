@@ -84,6 +84,7 @@ Window::Window(const Texture& icon)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+    glfwWindowHint(GLFW_SAMPLES, 4); // TODO: need control of this!
     window = glfwCreateWindow(1024, 1024, "ariaflow", nullptr, nullptr);
     glfwFocusWindow(window);
     glfwShowWindow(window);
@@ -115,8 +116,8 @@ Window::Window(const Texture& icon)
     // set icon
     GLFWimage image;
     int img_channels;
-    image.pixels = stbi_load_from_memory(icon.data, static_cast<int>(icon.size), &image.width, &image.height,
-        &img_channels, STBI_rgb_alpha);
+    image.pixels = stbi_load_from_memory(icon.data, static_cast<int>(icon.size), &image.width,
+        &image.height, &img_channels, STBI_rgb_alpha);
     glfwSetWindowIcon(window, 1, &image);
     stbi_image_free(image.pixels);
 

@@ -57,7 +57,7 @@ uniform sampler2D text_atlas; // 16x16
 uniform sampler2D text_bold_atlas; // 16x16
 uniform sampler2D slice_atlas; // 2x2
 uniform sampler2D icon_atlas; // 8x8
-uniform sampler2D line_atlas;
+uniform bool dither_alpha;
 
 vec2 nineSliceUV(vec2 uv, vec2 quad_size, vec2 atlas_size, bool top_border, bool bottom_border, bool left_border, bool right_border)
 {
@@ -141,8 +141,6 @@ void main()
         }
 
         vec4 target_colour = mix(colour_2, colour_1, pow(tex_value, 1.0f));
-        if (target_colour.a < 0.1f)
-           discard;
         frag_colour = target_colour;
     }
     else if (draw_mode == 1)    // 9-slice mode
@@ -157,8 +155,6 @@ void main()
         vec4 tex_colour = texture(slice_atlas, (ns_uv + ns_off) / 2.0f);
 
         vec4 target_colour = (tex_colour.rgb == vec3(1.0f, 0.0f, 1.0f)) ? colour_1 : (tex_colour * colour_2);
-        if (target_colour.a < 0.1f)
-            discard;
         frag_colour = target_colour;
     }
     else if (draw_mode == 2)    // icon mode
@@ -172,9 +168,28 @@ void main()
         vec4 tex_colour = texture(icon_atlas, (ic_uv + ic_off) / 8.0f);
 
         vec4 target_colour = (tex_colour.a > 0.5f) ? (tex_colour * colour_1) : colour_2;
-        if (target_colour.a < 0.1f)
-            discard;
         frag_colour = target_colour;
+    }
+
+    const float dither_map_4[16] =
+    {
+        0,  8,  2, 10,
+        12,  4, 14,  6,
+        3, 11,  1,  9,
+        15,  7, 13,  5
+    };
+
+    if (dither_alpha)
+    {
+        int layer = int(floor(position.z));
+        float dither_value = dither_map_4[((screen_coord.x % 4) + ((screen_coord.y % 4) * 4) + layer) % 16] / 16.0f;
+        if (frag_colour.a < dither_value)
+            discard;
+    }
+    else
+    {
+        if (frag_colour.a < 0.1f)
+            discard;
     }
 }
 )";
@@ -261,6 +276,7 @@ Backend_OpenGL::Backend_OpenGL(Font font, Texture slice_atlas, Texture icon_atla
         glGenTextures(1, texture);
         glActiveTexture(slot);
         glBindTexture(GL_TEXTURE_2D, *texture);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -294,11 +310,24 @@ Backend_OpenGL::~Backend_OpenGL()
     glDeleteTextures(1, &icon_atlas_texture);
 }
 
-void Backend_OpenGL::mesh(const std::vector<Vertex>& vertices, const std::vector<Index>& indices)
+void Backend_OpenGL::mesh(const std::vector<Vertex>& vertices, const std::vector<Index>& indices,
+    std::shared_ptr<Renderer> renderer)
 {
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-    glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(sizeof(Vertex) * vertices.size()),
-        vertices.data(), GL_STATIC_DRAW);
+    std::vector<Vertex> verts_tmp(vertices.size());
+    memcpy(verts_tmp.data(), vertices.data(), sizeof(Vertex) * vertices.size());
+    if (renderer->pixel_perfect)
+    {
+        for (auto& v : verts_tmp)
+        {
+            v.position.x = glm::round(v.position.x);
+            v.position.y = glm::round(v.position.y);
+            v.data_1.y   = glm::round(v.data_1.y);
+            v.data_1.z   = glm::round(v.data_1.z);
+        }
+    }
+    glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(sizeof(Vertex) * verts_tmp.size()),
+        verts_tmp.data(), GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(sizeof(unsigned int) * indices.size()),
@@ -307,7 +336,7 @@ void Backend_OpenGL::mesh(const std::vector<Vertex>& vertices, const std::vector
     index_count = static_cast<int>(indices.size());
 }
 
-void Backend_OpenGL::bind(std::shared_ptr<Window> window) const
+void Backend_OpenGL::bind(std::shared_ptr<Window> window, std::shared_ptr<Renderer> renderer) const
 {
     glBindVertexArray(vertex_array_object);
 
@@ -319,20 +348,32 @@ void Backend_OpenGL::bind(std::shared_ptr<Window> window) const
         (float*)&transform);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, text_atlas_texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, renderer->pixel_perfect ? GL_NEAREST : GL_LINEAR);
     glUniform1i(glGetUniformLocation(shader_program, "text_atlas"), 0);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, text_bold_atlas_texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, renderer->pixel_perfect ? GL_NEAREST : GL_LINEAR);
     glUniform1i(glGetUniformLocation(shader_program, "text_bold_atlas"), 1);
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, slice_atlas_texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, renderer->pixel_perfect ? GL_NEAREST : GL_LINEAR);
     glUniform1i(glGetUniformLocation(shader_program, "slice_atlas"), 2);
     glActiveTexture(GL_TEXTURE3);
     glBindTexture(GL_TEXTURE_2D, icon_atlas_texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, renderer->pixel_perfect ? GL_NEAREST : GL_LINEAR);
     glUniform1i(glGetUniformLocation(shader_program, "icon_atlas"), 3);
+    glUniform1i(glGetUniformLocation(shader_program, "dither_alpha"), renderer->force_dithered_alpha);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    if (renderer->force_dithered_alpha) glDisable(GL_BLEND);
+    else
+    {
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    }
+    if (renderer->anti_alias) glEnable(GL_MULTISAMPLE);
+    else
+        glDisable(GL_MULTISAMPLE);
 }
 
 void Backend_OpenGL::draw(std::shared_ptr<Window> window) const

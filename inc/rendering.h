@@ -53,8 +53,9 @@ public:
     void operator=(Backend&& other)      = delete;
     virtual ~Backend()                   = default;
 
-    virtual void mesh(const std::vector<Vertex>& vertices, const std::vector<Index>& indices) {};
-    virtual void bind(std::shared_ptr<Window> window) const {};
+    virtual void mesh(const std::vector<Vertex>& vertices, const std::vector<Index>& indices,
+        std::shared_ptr<Renderer> renderer) {};
+    virtual void bind(std::shared_ptr<Window> window, std::shared_ptr<Renderer> renderer) const {};
     virtual void draw(std::shared_ptr<Window> window) const {};
 };
 
@@ -84,8 +85,9 @@ public:
     void operator=(Backend_OpenGL&& other)      = delete;
     ~Backend_OpenGL() override;
 
-    void mesh(const std::vector<Vertex>& vertices, const std::vector<Index>& indices) override;
-    void bind(std::shared_ptr<Window> window) const override;
+    void mesh(const std::vector<Vertex>& vertices, const std::vector<Index>& indices,
+        std::shared_ptr<Renderer> renderer) override;
+    void bind(std::shared_ptr<Window> window, std::shared_ptr<Renderer> renderer) const override;
     void draw(std::shared_ptr<Window> window) const override;
 };
 
@@ -94,19 +96,12 @@ class Renderer final : std::enable_shared_from_this<Renderer>
     friend class Backing;
 
 public:
-    // TODO: okay, so backing data should be entirely internal. all the object has is the id, which may or
-    // may not be valid, and the functions for ensure, write, and release, are stored on the renderer; the
-    // renderer can then also handle modifying backing data when shuffling everything backwards when we hit
-    // max dead quads
-    // TODO: also, think about when the text, nineslice, etc are allocated - we will need the renderer at
-    // alloc time!
-
     struct Backing final
     {
         friend class Renderer;
 
     private:
-        uint32_t id;
+        uint64_t id;
         std::weak_ptr<Renderer> renderer;
 
     public:
@@ -147,7 +142,7 @@ public:
         void operator=(Primitive&& other)      = delete;
     };
 
-    class Text final : public Primitive
+    class Text_t final : public Primitive
     {
     public:
         enum Align : uint8_t
@@ -181,7 +176,7 @@ public:
         Format format;
 
     public:
-        ~Text() override {};
+        ~Text_t() override {};
 
         void setForeground(glm::vec4 _colour);
         void setBackground(glm::vec4 _colour);
@@ -192,7 +187,7 @@ public:
         void update() override; // TODO:
     };
 
-    class NineSlice final : public Primitive
+    class NineSlice_t final : public Primitive
     {
     public:
         enum Borders : uint8_t
@@ -212,7 +207,7 @@ public:
         Borders borders   = NS_BORDERS_ALL;
 
     public:
-        ~NineSlice() override {};
+        ~NineSlice_t() override {};
 
         void setFill(glm::vec4 _colour);
         void setBorder(glm::vec4 _colour);
@@ -223,16 +218,16 @@ public:
         void update() override;
 
     private:
-        NineSlice() { colour_b = { 1, 1, 1, 1 }; }
+        NineSlice_t() { colour_b = { 1, 1, 1, 1 }; }
     };
 
-    class Icon final : public Primitive
+    class Icon_t final : public Primitive
     {
     protected:
         int icon_index = 0;
 
     public:
-        ~Icon() override {};
+        ~Icon_t() override {};
 
         void setForeground(glm::vec4 _colour);
         void setBackground(glm::vec4 _colour);
@@ -242,7 +237,7 @@ public:
         void update() override;
     };
 
-    class Quad final : public Primitive
+    class Quad_t final : public Primitive
     {
     protected:
         glm::vec2 uv_top_left     = { 0, 0 };
@@ -251,7 +246,7 @@ public:
         glm::vec4 data_2          = { 0, 0, 0, 0 };
 
     public:
-        ~Quad() override {};
+        ~Quad_t() override {};
 
         void setColourA(glm::vec4 _colour_a);
         void setColourB(glm::vec4 _colour_b);
@@ -263,6 +258,11 @@ public:
     protected:
         void update() override;
     };
+
+    typedef std::shared_ptr<Text_t> Text;
+    typedef std::shared_ptr<NineSlice_t> NineSlice;
+    typedef std::shared_ptr<Icon_t> Icon;
+    typedef std::shared_ptr<Quad_t> Quad;
 
 private:
     struct BackingInternal final
@@ -280,11 +280,14 @@ private:
     const size_t max_dead_quads = 256;
     size_t dead_quads           = 0;
     bool source_modified        = false;
-    std::map<uint32_t, BackingInternal> backing_map;
-    uint32_t next_backing_id = 3;
+    std::map<uint64_t, BackingInternal> backing_map;
+    uint64_t next_backing_id = 3;
 
 public:
-    glm::mat3 transform = glm::mat3(1.0);
+    glm::mat3 transform       = glm::mat3(1.0);
+    bool force_dithered_alpha = false;
+    bool pixel_perfect        = true;
+    bool anti_alias           = true;
 
 public:
     Renderer();
@@ -294,15 +297,12 @@ public:
     void operator=(Renderer&& other)      = delete;
     ~Renderer()                           = default;
 
-    std::shared_ptr<Text> createText();
-    std::shared_ptr<NineSlice> createNineSlice();
-    std::shared_ptr<Icon> createIcon();
-    std::shared_ptr<Quad> createQuad();
+    Text createText();
+    NineSlice createNineSlice();
+    Icon createIcon();
+    Quad createQuad();
 
     void draw(std::shared_ptr<Window> window);
 };
-
-// TODO: ability to configure whether we use blended alpha or dithered alpha?
-// TODO: ability to configure whether we use linear or nearest interpolation?
 
 }; // namespace BBUI
