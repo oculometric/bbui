@@ -9,8 +9,6 @@
 namespace BBUI
 {
 
-class Window;
-
 struct Texture final
 {
     const unsigned char* data;
@@ -42,6 +40,9 @@ struct Vertex final
 
 typedef unsigned int Index;
 
+typedef std::shared_ptr<class Window_t> Window;
+typedef std::shared_ptr<class Renderer_t> Renderer;
+
 class Backend
 {
 public:
@@ -54,9 +55,9 @@ public:
     virtual ~Backend()                   = default;
 
     virtual void mesh(const std::vector<Vertex>& vertices, const std::vector<Index>& indices,
-        std::shared_ptr<Renderer> renderer) {};
-    virtual void bind(std::shared_ptr<Window> window, std::shared_ptr<Renderer> renderer) const {};
-    virtual void draw(std::shared_ptr<Window> window) const {};
+        Renderer renderer) {};
+    virtual void bind(Window window, Renderer renderer) const {};
+    virtual void draw(Window window) const {};
 };
 
 class Backend_OpenGL final : public Backend
@@ -86,23 +87,23 @@ public:
     ~Backend_OpenGL() override;
 
     void mesh(const std::vector<Vertex>& vertices, const std::vector<Index>& indices,
-        std::shared_ptr<Renderer> renderer) override;
-    void bind(std::shared_ptr<Window> window, std::shared_ptr<Renderer> renderer) const override;
-    void draw(std::shared_ptr<Window> window) const override;
+        Renderer renderer) override;
+    void bind(Window window, Renderer renderer) const override;
+    void draw(Window window) const override;
 };
 
-class Renderer final : std::enable_shared_from_this<Renderer>
+class Renderer_t final : std::enable_shared_from_this<Renderer_t>
 {
     friend class Backing;
 
 public:
     struct Backing final
     {
-        friend class Renderer;
+        friend class Renderer_t;
 
     private:
         uint64_t id;
-        std::weak_ptr<Renderer> renderer;
+        std::weak_ptr<Renderer_t> renderer;
 
     public:
         ~Backing() { release(); }
@@ -116,7 +117,7 @@ public:
 
     class Primitive
     {
-        friend class Renderer;
+        friend class Renderer_t;
 
     protected:
         Backing backing;
@@ -290,19 +291,19 @@ public:
     bool anti_alias           = true;
 
 public:
-    Renderer();
-    Renderer(const Renderer& other)       = delete;
-    Renderer(Renderer&& other)            = delete;
-    void operator=(const Renderer& other) = delete;
-    void operator=(Renderer&& other)      = delete;
-    ~Renderer()                           = default;
+    Renderer_t();
+    Renderer_t(const Renderer_t& other)     = delete;
+    Renderer_t(Renderer_t&& other)          = delete;
+    void operator=(const Renderer_t& other) = delete;
+    void operator=(Renderer_t&& other)      = delete;
+    ~Renderer_t()                           = default;
 
     Text createText();
     NineSlice createNineSlice();
     Icon createIcon();
     Quad createQuad();
 
-    void draw(std::shared_ptr<Window> window);
+    void draw(Window window);
 };
 
 }; // namespace BBUI

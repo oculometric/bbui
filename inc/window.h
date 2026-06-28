@@ -5,6 +5,7 @@
 #include <map>
 #include <queue>
 #include <string>
+#include <memory>
 
 struct GLFWwindow;
 struct GLFWcursor;
@@ -133,7 +134,7 @@ enum CursorType : uint8_t
     CURSOR_MAX_ENUM   // invalid cursor type used for iterating the enum
 };
 
-class Window
+class Window_t
 {
 public:
     glm::vec3 clear_colour = { 0.08f, 0.08f, 0.08f };
@@ -159,13 +160,13 @@ private:
     std::map<std::string, InputResult> shortcuts;
 
 public:
-    Window() = delete;
-    Window(const struct Texture& icon);
-    Window(const Window& other)         = delete;
-    Window(Window&& other)              = delete;
-    void operator=(const Window& other) = delete;
-    void operator=(Window&& other)      = delete;
-    ~Window();
+    Window_t() = delete;
+    Window_t(const struct Texture& icon);
+    Window_t(const Window_t& other)       = delete;
+    Window_t(Window_t&& other)            = delete;
+    void operator=(const Window_t& other) = delete;
+    void operator=(Window_t&& other)      = delete;
+    ~Window_t();
 
     void setTitle(const std::string& title);
     glm::u32vec2 getSize() const { return current_frame_size; }
@@ -204,5 +205,7 @@ private:
     static void mouseFunction(GLFWwindow* window, int button, int action, int mods);
     static void scrollFunction(GLFWwindow* window, double xoffset, double yoffset);
 };
+
+typedef std::shared_ptr<Window_t> Window;
 
 }; // namespace BBUI

@@ -12,9 +12,9 @@
 
 using namespace BBUI;
 
-static std::unordered_map<GLFWwindow*, Window*> windows;
+static std::unordered_map<GLFWwindow*, Window_t*> windows;
 
-void Window::keyFunction(GLFWwindow* window, int key, int scancode, int action, int mods)
+void Window_t::keyFunction(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     ModifierKey modifiers = MODIFIER_NONE;
     if (mods & GLFW_MOD_ALT) modifiers = modifiers | MODIFIER_ALT;
@@ -39,10 +39,10 @@ void Window::keyFunction(GLFWwindow* window, int key, int scancode, int action, 
     }
 }
 
-void Window::charFunction(GLFWwindow* window, unsigned int codepoint)
+void Window_t::charFunction(GLFWwindow* window, unsigned int codepoint)
 { windows[window]->char_events.push(codepoint); }
 
-void Window::mouseFunction(GLFWwindow* window, int button, int action, int mods)
+void Window_t::mouseFunction(GLFWwindow* window, int button, int action, int mods)
 {
     ModifierKey modifiers = MODIFIER_NONE;
     if (mods & GLFW_MOD_ALT) modifiers = modifiers | MODIFIER_ALT;
@@ -64,10 +64,10 @@ void Window::mouseFunction(GLFWwindow* window, int button, int action, int mods)
     windows[window]->mouse_events.insert({ result.key, result });
 }
 
-void Window::scrollFunction(GLFWwindow* window, double xoffset, double yoffset)
+void Window_t::scrollFunction(GLFWwindow* window, double xoffset, double yoffset)
 { windows[window]->scroll_delta += static_cast<float>(yoffset); }
 
-Window::Window(const Texture& icon)
+Window_t::Window_t(const Texture& icon)
 {
     // init glfw if it isnt already
     if (windows.empty())
@@ -128,12 +128,12 @@ Window::Window(const Texture& icon)
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
             throw std::runtime_error("failed to initialize GLAD");
     }
-    
+
     // insert into the window map for input redirection
     windows[window] = this;
 }
 
-Window::~Window()
+Window_t::~Window_t()
 {
     glfwDestroyWindow(window);
     glfwWaitEvents();
@@ -141,9 +141,9 @@ Window::~Window()
     if (windows.empty()) glfwTerminate();
 }
 
-void Window::setTitle(const std::string& title) { glfwSetWindowTitle(window, title.c_str()); }
+void Window_t::setTitle(const std::string& title) { glfwSetWindowTitle(window, title.c_str()); }
 
-bool Window::isMouseDown(InputButton button) const
+bool Window_t::isMouseDown(InputButton button) const
 {
     int but;
     switch (button)
@@ -156,7 +156,7 @@ bool Window::isMouseDown(InputButton button) const
     return glfwGetMouseButton(window, but);
 }
 
-InputResult Window::wasMousePressed(InputButton button, bool consume)
+InputResult Window_t::wasMousePressed(InputButton button, bool consume)
 {
     auto [first, last] = mouse_events.equal_range(button);
     for (auto it = first; it != last; ++it)
@@ -171,7 +171,7 @@ InputResult Window::wasMousePressed(InputButton button, bool consume)
     return InputResult{};
 }
 
-InputResult Window::wasMouseReleased(InputButton button, bool consume)
+InputResult Window_t::wasMouseReleased(InputButton button, bool consume)
 {
     auto [first, last] = mouse_events.equal_range(button);
     for (auto it = first; it != last; ++it)
@@ -186,9 +186,9 @@ InputResult Window::wasMouseReleased(InputButton button, bool consume)
     return InputResult{};
 }
 
-bool Window::isKeyDown(uint16_t key) const { return glfwGetKey(window, key) == GLFW_PRESS; }
+bool Window_t::isKeyDown(uint16_t key) const { return glfwGetKey(window, key) == GLFW_PRESS; }
 
-InputResult Window::wasKeyPressed(uint16_t key, bool allow_repeat, bool consume)
+InputResult Window_t::wasKeyPressed(uint16_t key, bool allow_repeat, bool consume)
 {
     auto [first, last] = key_events.equal_range(static_cast<InputButton>(key));
     for (auto it = first; it != last; ++it)
@@ -203,7 +203,7 @@ InputResult Window::wasKeyPressed(uint16_t key, bool allow_repeat, bool consume)
     return InputResult{};
 }
 
-InputResult Window::wasKeyReleased(uint16_t key, bool consume)
+InputResult Window_t::wasKeyReleased(uint16_t key, bool consume)
 {
     auto [first, last] = key_events.equal_range(static_cast<InputButton>(key));
     for (auto it = first; it != last; ++it)
@@ -218,7 +218,7 @@ InputResult Window::wasKeyReleased(uint16_t key, bool consume)
     return InputResult{};
 }
 
-unsigned int Window::getCharEvent()
+unsigned int Window_t::getCharEvent()
 {
     if (char_events.empty()) return 0;
     else
@@ -229,7 +229,7 @@ unsigned int Window::getCharEvent()
     }
 }
 
-void Window::poll(bool clear_events)
+void Window_t::poll(bool clear_events)
 {
     // reset things
     last_cursor_priority = 0;
@@ -254,7 +254,7 @@ void Window::poll(bool clear_events)
     scroll_delta             = 0.0f;
 }
 
-void Window::present() const
+void Window_t::present() const
 {
     glfwSetCursor(window, cursors[current_cursor]);
     glfwSwapBuffers(window);
@@ -264,16 +264,16 @@ void Window::present() const
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-bool Window::shouldClose() const
+bool Window_t::shouldClose() const
 {
     bool tmp = glfwWindowShouldClose(window);
     glfwSetWindowShouldClose(window, false);
     return tmp;
 }
 
-void Window::makeCurrentContext() const { glfwMakeContextCurrent(window); }
+void Window_t::makeCurrentContext() const { glfwMakeContextCurrent(window); }
 
-void Window::setCursorType(CursorType t, int priority)
+void Window_t::setCursorType(CursorType t, int priority)
 {
     if (priority >= last_cursor_priority)
     {
@@ -282,10 +282,10 @@ void Window::setCursorType(CursorType t, int priority)
     }
 }
 
-void Window::registerShortcut(const std::string& action, ModifierKey modifiers, uint16_t key)
+void Window_t::registerShortcut(const std::string& action, ModifierKey modifiers, uint16_t key)
 { shortcuts[action] = InputResult{ static_cast<InputButton>(key), false, false, modifiers }; }
 
-bool Window::wasShortcutTriggered(const std::string& action)
+bool Window_t::wasShortcutTriggered(const std::string& action)
 {
     if (!shortcuts.count(action)) return false;
     if (shortcuts[action].pressed)
@@ -296,11 +296,11 @@ bool Window::wasShortcutTriggered(const std::string& action)
     return false;
 }
 
-void Window::triggerShortcut(const std::string& action)
+void Window_t::triggerShortcut(const std::string& action)
 {
     if (shortcuts.count(action)) shortcuts[action].pressed = true;
 }
 
-void Window::writeClipboard(const std::string& value) { glfwSetClipboardString(window, value.c_str()); }
+void Window_t::writeClipboard(const std::string& value) { glfwSetClipboardString(window, value.c_str()); }
 
-std::string Window::readClipboard() { return glfwGetClipboardString(window); }
+std::string Window_t::readClipboard() { return glfwGetClipboardString(window); }

@@ -2,7 +2,7 @@
 
 using namespace BBUI;
 
-void Renderer::Backing::ensure(Index capacity)
+void Renderer_t::Backing::ensure(Index capacity)
 {
     auto r = renderer.lock();
     if (!r) return;
@@ -58,7 +58,7 @@ void Renderer::Backing::ensure(Index capacity)
     }
 }
 
-void Renderer::Backing::write(glm::vec2 p1, glm::vec2 p2, glm::vec2 p3, glm::vec2 p4, float z,
+void Renderer_t::Backing::write(glm::vec2 p1, glm::vec2 p2, glm::vec2 p3, glm::vec2 p4, float z,
     glm::vec2 uv_tl, glm::vec2 uv_br, glm::vec4 colour_1, glm::vec4 colour_2, glm::vec4 data_1,
     glm::vec4 data_2, Index offset)
 {
@@ -88,7 +88,7 @@ void Renderer::Backing::write(glm::vec2 p1, glm::vec2 p2, glm::vec2 p3, glm::vec
     r->vertices[base + 3] = Vertex{ _p4, colour_1, colour_2, data_1, data_2, uv_br };
 }
 
-void Renderer::Backing::release()
+void Renderer_t::Backing::release()
 {
     auto r = renderer.lock();
     if (!r) return;
@@ -112,41 +112,41 @@ void Renderer::Backing::release()
     id                 = 0;
 }
 
-Renderer::Renderer()
+Renderer_t::Renderer_t()
 {
     backend.reset(new Backend_OpenGL(Font::getRobotoFont(), Texture::getDefaultSliceTexture(),
         Texture::getDefaultIconTexture()));
 }
 
-Renderer::Text Renderer::createText()
+Renderer_t::Text Renderer_t::createText()
 {
     auto object              = std::make_shared<Text_t>();
     object->backing.renderer = this->shared_from_this();
     return object;
 }
 
-Renderer::NineSlice Renderer::createNineSlice()
+Renderer_t::NineSlice Renderer_t::createNineSlice()
 {
     auto object              = std::make_shared<NineSlice_t>();
     object->backing.renderer = this->shared_from_this();
     return object;
 }
 
-Renderer::Icon Renderer::createIcon()
+Renderer_t::Icon Renderer_t::createIcon()
 {
     auto object              = std::make_shared<Icon_t>();
     object->backing.renderer = this->shared_from_this();
     return object;
 }
 
-Renderer::Quad Renderer::createQuad()
+Renderer_t::Quad Renderer_t::createQuad()
 {
     auto object              = std::make_shared<Quad_t>();
     object->backing.renderer = this->shared_from_this();
     return object;
 }
 
-void Renderer::draw(std::shared_ptr<Window> window)
+void Renderer_t::draw(Window window)
 {
     if (source_modified) backend->mesh(vertices, indices, shared_from_this());
     source_modified = false;

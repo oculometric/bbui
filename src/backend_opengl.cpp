@@ -311,7 +311,7 @@ Backend_OpenGL::~Backend_OpenGL()
 }
 
 void Backend_OpenGL::mesh(const std::vector<Vertex>& vertices, const std::vector<Index>& indices,
-    std::shared_ptr<Renderer> renderer)
+    Renderer renderer)
 {
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
     std::vector<Vertex> verts_tmp(vertices.size());
@@ -336,7 +336,7 @@ void Backend_OpenGL::mesh(const std::vector<Vertex>& vertices, const std::vector
     index_count = static_cast<int>(indices.size());
 }
 
-void Backend_OpenGL::bind(std::shared_ptr<Window> window, std::shared_ptr<Renderer> renderer) const
+void Backend_OpenGL::bind(Window window, Renderer renderer) const
 {
     glBindVertexArray(vertex_array_object);
 
@@ -380,5 +380,5 @@ void Backend_OpenGL::bind(std::shared_ptr<Window> window, std::shared_ptr<Render
     glDisable(GL_CULL_FACE);
 }
 
-void Backend_OpenGL::draw(std::shared_ptr<Window> window) const
+void Backend_OpenGL::draw(Window window) const
 { glDrawElements(GL_TRIANGLES, index_count, GL_UNSIGNED_INT, nullptr); }
