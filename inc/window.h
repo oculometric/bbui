@@ -3,9 +3,9 @@
 #include <array>
 #include <glm/glm.hpp>
 #include <map>
+#include <memory>
 #include <queue>
 #include <string>
-#include <memory>
 
 struct GLFWwindow;
 struct GLFWcursor;
@@ -134,7 +134,42 @@ enum CursorType : uint8_t
     CURSOR_MAX_ENUM   // invalid cursor type used for iterating the enum
 };
 
-class Window_t
+typedef std::shared_ptr<class Window_t> Window;
+
+class Surface
+{
+protected:
+    std::weak_ptr<class Window_t> owner;
+
+public:
+    Surface() = delete;
+    Surface(Window window) : owner(window) {}
+    Surface(const Surface& other)        = delete;
+    Surface(Surface&& other)             = delete;
+    void operator=(const Surface& other) = delete;
+    void operator=(Surface&& other)      = delete;
+    virtual ~Surface()                   = default;
+
+    virtual void clear() {}
+    virtual void present() {}
+};
+
+class Surface_OpenGL : public Surface
+{
+public:
+    Surface_OpenGL() = delete;
+    Surface_OpenGL(Window window);
+    Surface_OpenGL(const Surface_OpenGL& other) = delete;
+    Surface_OpenGL(Surface_OpenGL&& other)      = delete;
+    void operator=(const Surface_OpenGL& other) = delete;
+    void operator=(Surface_OpenGL&& other)      = delete;
+    ~Surface_OpenGL() override;
+
+    void clear();
+    void present();
+};
+
+class Window_t : std::enable_shared_from_this<Window_t>
 {
 public:
     glm::vec3 clear_colour = { 0.08f, 0.08f, 0.08f };
@@ -158,6 +193,8 @@ private:
     int last_cursor_priority  = 0;
 
     std::map<std::string, InputResult> shortcuts;
+
+    std::unique_ptr<Surface> surface;
 
 public:
     Window_t() = delete;
@@ -186,9 +223,9 @@ public:
     unsigned int getCharEvent();
 
     void poll(bool clear_events = true);
+    void clear() const;
     void present() const;
     bool shouldClose() const;
-    void makeCurrentContext() const;
 
     void setCursorType(CursorType t, int priority = 0);
 
@@ -199,13 +236,13 @@ public:
     void writeClipboard(const std::string& value);
     std::string readClipboard();
 
+    GLFWwindow* getWindow() const { return window; }
+
 private:
     static void keyFunction(GLFWwindow* window, int key, int scancode, int action, int mods);
     static void charFunction(GLFWwindow* window, unsigned int codepoint);
     static void mouseFunction(GLFWwindow* window, int button, int action, int mods);
     static void scrollFunction(GLFWwindow* window, double xoffset, double yoffset);
 };
-
-typedef std::shared_ptr<Window_t> Window;
 
 }; // namespace BBUI

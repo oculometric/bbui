@@ -121,13 +121,8 @@ Window_t::Window_t(const Texture& icon)
     glfwSetWindowIcon(window, 1, &image);
     stbi_image_free(image.pixels);
 
-    // configure opengl
-    makeCurrentContext();
-    if (windows.empty())
-    {
-        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-            throw std::runtime_error("failed to initialize GLAD");
-    }
+    // configure surface
+    surface.reset(reinterpret_cast<Surface*>(new Surface_OpenGL(shared_from_this())));
 
     // insert into the window map for input redirection
     windows[window] = this;
@@ -254,14 +249,12 @@ void Window_t::poll(bool clear_events)
     scroll_delta             = 0.0f;
 }
 
+void Window_t::clear() const { surface->clear(); }
+
 void Window_t::present() const
 {
     glfwSetCursor(window, cursors[current_cursor]);
-    glfwSwapBuffers(window);
-    glViewport(0, 0, getSize().x, getSize().y);
-    glClearColor(clear_colour.x, clear_colour.y, clear_colour.z, 1.0f);
-    glClearDepth(-1000.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    surface->present();
 }
 
 bool Window_t::shouldClose() const
@@ -270,8 +263,6 @@ bool Window_t::shouldClose() const
     glfwSetWindowShouldClose(window, false);
     return tmp;
 }
-
-void Window_t::makeCurrentContext() const { glfwMakeContextCurrent(window); }
 
 void Window_t::setCursorType(CursorType t, int priority)
 {
