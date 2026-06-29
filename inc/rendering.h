@@ -304,6 +304,7 @@ public:
     Quad createQuad();
 
     void draw(Window window);
+    void clear();
 };
 
 }; // namespace BBUI

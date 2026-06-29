@@ -156,3 +156,11 @@ void Renderer_t::draw(Window window)
     backend->bind(window, shared_from_this());
     backend->draw(window);
 }
+
+void Renderer_t::clear()
+{
+    vertices.clear();
+    indices.clear();
+    backing_map.clear();
+    source_modified = true;
+}
