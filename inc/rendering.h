@@ -92,7 +92,7 @@ public:
     void draw(Window window) const override;
 };
 
-class Renderer_t final : std::enable_shared_from_this<Renderer_t>
+class Renderer_t final : public std::enable_shared_from_this<Renderer_t>
 {
     friend class Backing;
 

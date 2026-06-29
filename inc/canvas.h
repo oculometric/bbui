@@ -72,33 +72,47 @@ public:
     };
 
 private:
+    glm::vec2 position     = { 0, 0 };
+    glm::vec2 size         = { 10, 10 };
+    Anchor anchor_internal = ANCHOR_TOP_LEFT;
+    Anchor anchor_external = ANCHOR_TOP_LEFT;
+
     glm::vec2 top_left_offset     = { 0, 0 };
     Anchor top_left_relative      = ANCHOR_TOP_LEFT;
-    glm::vec2 size                = { 10, 10 };
     glm::vec2 bottom_right_offset = { 0, 0 };
     Anchor bottom_right_relative  = ANCHOR_BOTTOM_RIGHT;
+    bool use_offsets              = false;
     Units units                   = UNITS_PIXELS;
-    glm::mat3 matrix              = glm::mat3(1);
+
+    bool modified = true;
 
 public:
-    glm::vec2 getPosition() const { return top_left_offset; }
-    void setPosition(glm::vec2 position);
-    glm::vec2 getTopLeftOffset() const { return top_left_offset; }
-    void setTopLeftOffset(glm::vec2 offset, bool keep_size = false);
-    glm::vec2 getBottomRightOffset() const { return bottom_right_offset; }
-    void setBottomRightOffset(glm::vec2 offset, bool keep_size = false);
+    glm::vec2 getPosition() const { return position; }
+    void setPosition(glm::vec2 p);
     glm::vec2 getSize() const { return size; }
-    void setSize(glm::vec2, bool keep_position = true);
+    void setSize(glm::vec2 s);
+    Anchor getAnchor() const { return top_left_relative; }
+    void setAnchor(Anchor internal, Anchor external);
+    void usePositionSize();
+
+    glm::vec2 getTopLeftOffset() const { return top_left_offset; }
+    void setTopLeftOffset(glm::vec2 offset);
+    glm::vec2 getBottomRightOffset() const { return bottom_right_offset; }
+    void setBottomRightOffset(glm::vec2 offset);
     Anchor getTopLeftAnchor() const { return top_left_relative; }
-    void setTopLeftAnchor(Anchor anchor, bool keep_offset = false);
-    Anchor getBottomRightAncho() const { return bottom_right_relative; }
-    void setBottomRIghtAnchor(Anchor anchor, bool keep_offset = false);
-    glm::mat3 getMatrix() const { return matrix; }
+    void setTopLeftAnchor(Anchor anchor);
+    Anchor getBottomRightAnchor() const { return bottom_right_relative; }
+    void setBottomRightAnchor(Anchor anchor);
+    void useOffsets();
+
+    bool checkModified();
+    void setModified() { modified = true; }
+    std::array<glm::vec2, 2> getRenderPositionAndSize(const Transform& parent) const;
 };
 
 typedef std::shared_ptr<class Component_t> Component;
 
-class Component_t
+class Component_t : public std::enable_shared_from_this<Component_t>
 {
     friend class Canvas_t;
 
@@ -119,16 +133,15 @@ public:
 
 public:
     std::string internal_name;
+    Transform transform;
 
 protected:
-    Transform transform;
     // TODO: everything has to be protected/private - changes to the component means calls to the renderer
 
 private:
     std::vector<Component> children;
     std::weak_ptr<Component_t> parent;
-    bool has_style_override = false;
-    Style style_override;
+    std::weak_ptr<Canvas_t> canvas;
 
 public:
     Component_t()                            = default;
@@ -143,7 +156,7 @@ public:
     // called to completely redraw the component, refreshing all render primitives
     virtual void redraw() {}
     // arranges children of the component, modifying their transforms
-    virtual void arrange();
+    virtual void arrange() {}
 
     // called when a mouse button begins to be pressed down
     virtual void mousePressed(InputButton button, glm::vec2 local_position) {}
@@ -186,22 +199,9 @@ public:
     glm::vec2 canvasToLocal(glm::vec2 point) const;
 
     Component findChildByName(const std::string& name) const;
-    void addChild(Component child);
+    Component addChild(Component child) { return canvas.lock()->insert(child, shared_from_this()); }
     std::vector<Component>::iterator getChildrenBegin() { return children.begin(); }
     std::vector<Component>::iterator getChildrenEnd() { return children.end(); }
-
-    Style getStyle() const;
-    void setStyleOverride(Style style);
-    void clearStyleOverride();
-
-    Transform getTransform() const { return transform; }
-    void setTransform(Transform t);
-    glm::vec2 getPosition() const;
-    void setPosition(glm::vec2 p);
-    glm::vec2 getSize() const;
-    void setSize(glm::vec2 s);
-    // TODO: the transform needs to be protected by these functions which will also call
-    // arrangeselfandchildren
 
 private:
     void updateSelfAndChildren();
@@ -211,7 +211,7 @@ private:
 
 typedef std::shared_ptr<class Renderer_t> Renderer;
 
-class Canvas_t
+class Canvas_t : public std::enable_shared_from_this<Canvas_t>
 {
 private:
     Style style;
@@ -239,6 +239,8 @@ public:
     void setStyle(Style new_style);
     void setSizeOverride(glm::vec2 size);
     void clearSizeOverride();
+
+    Component insert(Component component, Component parent);
 
 private:
     void redrawComponents();

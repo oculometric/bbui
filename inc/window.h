@@ -169,7 +169,7 @@ public:
     void present();
 };
 
-class Window_t : std::enable_shared_from_this<Window_t>
+class Window_t : public std::enable_shared_from_this<Window_t>
 {
 public:
     glm::vec3 clear_colour = { 0.08f, 0.08f, 0.08f };
