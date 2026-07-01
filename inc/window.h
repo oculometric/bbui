@@ -113,11 +113,9 @@ struct InputResult
     bool pressed          = false;
     bool repeat           = false;
     ModifierKey modifiers = MODIFIER_NONE;
+    long long time        = 0;
 
     inline operator bool() const { return key != KEY_NONE; }
-    inline bool andHasModifier(ModifierKey mod) const { return (key != KEY_NONE) && (modifiers & mod); }
-    inline bool andDoesntHaveModifer(ModifierKey mod) const
-    { return (key != KEY_NONE) && !(modifiers & mod); }
 };
 
 enum CursorType : uint8_t
@@ -219,6 +217,7 @@ public:
     bool isKeyDown(uint16_t key) const;
     InputResult wasKeyPressed(uint16_t key, bool allow_repeat = true, bool consume = true);
     InputResult wasKeyReleased(uint16_t key, bool consume = true);
+    InputResult getKeyEvent();
 
     unsigned int getCharEvent();
 

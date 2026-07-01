@@ -4,6 +4,7 @@
 
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
+#include <ctime>
 #include <glad.h>
 #include <iostream>
 #include <stb_image.h>
@@ -24,7 +25,7 @@ void Window_t::keyFunction(GLFWwindow* window, int key, int scancode, int action
     if (mods & GLFW_MOD_SHIFT) modifiers = modifiers | MODIFIER_SHIFT;
     if (mods & GLFW_MOD_SUPER) modifiers = modifiers | MODIFIER_SUPER;
     InputResult result = { static_cast<InputButton>(key), action == GLFW_PRESS, action == GLFW_REPEAT,
-        modifiers };
+        modifiers, time(nullptr) };
     windows[window]->key_events.insert({ result.key, result });
 
     if (action == GLFW_PRESS)
@@ -211,6 +212,21 @@ InputResult Window_t::wasKeyReleased(uint16_t key, bool consume)
         }
     }
     return InputResult{};
+}
+
+InputResult Window_t::getKeyEvent()
+{
+    if (key_events.empty()) return InputResult{};
+
+    std::multimap<InputButton, InputResult>::iterator earliest_result;
+    earliest_result->second.time = LLONG_MAX;
+    for (auto it = key_events.begin(); it != key_events.end(); ++it)
+    {
+        if (it->second.time < earliest_result->second.time) earliest_result = it;
+    }
+    InputResult result = earliest_result->second;
+    key_events.erase(earliest_result);
+    return result;
 }
 
 unsigned int Window_t::getCharEvent()

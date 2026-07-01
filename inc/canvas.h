@@ -12,6 +12,8 @@ class Style
     // TODO: this!
 };
 
+class Component_t;
+
 struct Transform
 {
 public:
@@ -71,6 +73,9 @@ public:
         ANCHOR_BOTTOM_RIGHT
     };
 
+public:
+    std::weak_ptr<Component_t> owner;
+
 private:
     glm::vec2 position     = { 0, 0 };
     glm::vec2 size         = { 10, 10 };
@@ -84,7 +89,11 @@ private:
     bool use_offsets              = false;
     Units units                   = UNITS_PIXELS;
 
-    bool modified = true;
+    glm::vec2 computed_position;
+    glm::vec2 computed_size;
+
+    bool modified        = true;
+    bool needs_recompute = true;
 
 public:
     glm::vec2 getPosition() const { return position; }
@@ -106,8 +115,8 @@ public:
     void useOffsets();
 
     bool checkModified();
-    void setModified() { modified = true; }
-    std::array<glm::vec2, 2> getRenderPositionAndSize(const Transform& parent) const;
+    void setModified();
+    std::array<glm::vec2, 2> getRenderPositionAndSize();
 };
 
 typedef std::shared_ptr<class Component_t> Component;
@@ -144,7 +153,7 @@ private:
     std::weak_ptr<Canvas_t> canvas;
 
 public:
-    Component_t()                            = default;
+    Component_t();
     Component_t(const Component_t& other)    = delete;
     Component_t(Component_t&& other)         = delete;
     void operator=(const Component_t& other) = delete;
@@ -169,7 +178,7 @@ public:
     // called when the mouse leaves the bounds of the component
     virtual void mouseExited() {}
     // called when the mouse moves within the bounds of the component
-    virtual void mouesMoved(glm::vec2 delta) {}
+    virtual void mouseMoved(glm::vec2 delta) {}
     // called when the mouse moves within the bounds of the component, and a button is held down
     virtual void mouseDragged(glm::vec2 delta, InputButton button) {}
 
@@ -195,13 +204,15 @@ public:
     // determines the tooltip (if any) shown when the mouse hovers on the component
     virtual Tooltip getTooltip() const { return Tooltip(); }
 
-    glm::vec2 localToCanvas(glm::vec2 point) const;
-    glm::vec2 canvasToLocal(glm::vec2 point) const;
+    glm::vec2 localToCanvas(glm::vec2 point);
+    glm::vec2 canvasToLocal(glm::vec2 point);
+    void requestFocus();
 
     Component findChildByName(const std::string& name) const;
     Component addChild(Component child) { return canvas.lock()->insert(child, shared_from_this()); }
     std::vector<Component>::iterator getChildrenBegin() { return children.begin(); }
     std::vector<Component>::iterator getChildrenEnd() { return children.end(); }
+    Component getParent() const { return parent.lock(); }
 
 private:
     void updateSelfAndChildren();
@@ -219,6 +230,8 @@ private:
     bool has_size_override = false;
     glm::vec2 size_override;
     Component focused_component;
+    Component last_under_mouse;
+    glm::vec2 mouse_down_position[3];
     Component root;
     std::vector<Component> all_components;
 
@@ -239,8 +252,11 @@ public:
     void setStyle(Style new_style);
     void setSizeOverride(glm::vec2 size);
     void clearSizeOverride();
-
+    
     Component insert(Component component, Component parent);
+    void setFocus(Component component);
+    void advanceFocus();
+    void recedeFocus();
 
 private:
     void redrawComponents();

@@ -88,6 +88,7 @@ get_file_content(${CMAKE_CURRENT_SOURCE_DIR}/src/surface_opengl.cpp COMBINED_FIL
 get_file_content(${CMAKE_CURRENT_SOURCE_DIR}/src/default_textures.cpp COMBINED_FILE)
 get_file_content(${CMAKE_CURRENT_SOURCE_DIR}/src/renderer_primitives.cpp COMBINED_FILE)
 get_file_content(${CMAKE_CURRENT_SOURCE_DIR}/src/renderer.cpp COMBINED_FILE)
+get_file_content(${CMAKE_CURRENT_SOURCE_DIR}/src/canvas.cpp COMBINED_FILE)
 string(APPEND COMBINED_FILE "\n\n#endif
 #pragma endregion BBUI_IMPLEMENTATIONS\n")
 
