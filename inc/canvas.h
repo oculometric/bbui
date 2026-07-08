@@ -120,6 +120,7 @@ public:
 };
 
 typedef std::shared_ptr<class Component_t> Component;
+class Canvas_t;
 
 class Component_t : public std::enable_shared_from_this<Component_t>
 {

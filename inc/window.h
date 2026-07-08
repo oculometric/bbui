@@ -163,8 +163,8 @@ public:
     void operator=(Surface_OpenGL&& other)      = delete;
     ~Surface_OpenGL() override;
 
-    void clear();
-    void present();
+    void clear() override;
+    void present() override;
 };
 
 class Window_t : public std::enable_shared_from_this<Window_t>

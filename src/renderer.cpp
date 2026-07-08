@@ -1,5 +1,7 @@
 #include "rendering.h"
 
+#include <cstring>
+
 using namespace BBUI;
 
 void Renderer_t::Backing::ensure(Index capacity)
@@ -150,7 +152,7 @@ void Renderer_t::draw(Window window)
 {
     if (source_modified) backend->mesh(vertices, indices, shared_from_this());
     source_modified = false;
-    if (next_backing_id = 0) next_backing_id = 3;
+    if (next_backing_id == 0) next_backing_id = 3;
     // TODO: handle realloc upon max dead quads - move everything backwards and modify the backing data to
     // preserve the timeline
     backend->bind(window, shared_from_this());
