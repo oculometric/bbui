@@ -1,6 +1,7 @@
 #include "canvas.h"
 
 #include "rendering.h"
+#include "window.h"
 
 using namespace BBUI;
 
@@ -211,6 +212,7 @@ Component Component_t::findChildByName(const std::string& name) const
     {
         if (comp->internal_name == name) return comp;
     }
+    return nullptr;
 }
 
 Component Component_t::addChild(Component child)

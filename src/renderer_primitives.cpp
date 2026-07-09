@@ -133,7 +133,7 @@ void TextPrimitive_t::setFormat(const Format& _format)
 std::vector<Vertex> TextPrimitive_t::getGeometry()
 {
     float line_width     = size.x;
-    glm::vec2 glyph_size = getRenderer()->getCharacterSize();
+    glm::vec2 glyph_size = getRenderer()->getGlyphSize();
     glm::vec2 char_size  = glyph_size;
     char_size *= format.font_size / char_size.y;
     size_t chars_per_line =

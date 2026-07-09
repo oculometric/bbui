@@ -1,12 +1,12 @@
 #include "rendering.h"
 #include "window.h"
 
+#include <cstring>
 #include <glad.h>
 #include <glm/gtc/matrix_access.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <stb_image.h>
 #include <stdexcept>
-#include <cstring>
 
 using namespace BBUI;
 
@@ -195,7 +195,8 @@ void main()
 }
 )";
 
-Backend_OpenGL::Backend_OpenGL(Font font, Texture slice_atlas, Texture icon_atlas) : Backend()
+Backend_OpenGL::Backend_OpenGL(Font font, Texture slice_atlas, Texture icon_atlas) :
+    Backend(font, slice_atlas, icon_atlas)
 {
     // construct vertex and index buffers
     glGenVertexArrays(1, &vertex_array_object);

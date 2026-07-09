@@ -43,12 +43,17 @@ struct Vertex final
 
 class Backend
 {
+protected:
+    Font current_font;
+
 public:
-    Backend(Font font, Texture slice_atlas, Texture icon_atlas) {}
-    Backend()                                = default;
+    Backend(Font font, Texture slice_atlas, Texture icon_atlas) : current_font(font) {}
+    Backend()                                = delete;
     Backend(const Backend& other)            = delete;
     Backend& operator=(const Backend& other) = delete;
     virtual ~Backend()                       = default;
+
+    glm::vec2 getFontGlyphSize() const { return current_font.glyph_size; }
 
     virtual void mesh(const std::vector<Vertex>& vertices, const std::vector<Index>& indices,
         Renderer renderer) {};
@@ -108,6 +113,7 @@ public:
     void setSize(glm::vec2 _size);
 
 protected:
+    Primitive_t() = default;
     Renderer getRenderer();
     void setModified();
     static std::vector<Vertex> makeQuad(glm::vec2 p1, glm::vec2 p2, glm::vec2 p3, glm::vec2 p4, float z,
@@ -115,7 +121,6 @@ protected:
         glm::vec4 data_2);
 
 private:
-    Primitive_t()                                    = default;
     Primitive_t(const Primitive_t& other)            = delete;
     Primitive_t& operator=(const Primitive_t& other) = delete;
 };
@@ -159,6 +164,8 @@ private:
 
 class IconPrimitive_t final : public Primitive_t
 {
+    friend class Renderer_t;
+
 protected:
     glm::vec4 foreground = { 1, 1, 1, 1 };
     glm::vec4 background = { 0, 0, 0, 0 };
@@ -171,7 +178,7 @@ public:
 
     std::vector<Vertex> getGeometry() override;
 
-protected:
+private:
     IconPrimitive_t()                                        = default;
     IconPrimitive_t(const IconPrimitive_t& other)            = delete;
     IconPrimitive_t& operator=(const IconPrimitive_t& other) = delete;
@@ -179,6 +186,8 @@ protected:
 
 class TextPrimitive_t final : public Primitive_t
 {
+    friend class Renderer_t;
+
 public:
     enum Align : uint8_t
     {
@@ -222,7 +231,7 @@ public:
     std::vector<Vertex> getGeometry() override;
     size_t getQuadCount() override;
 
-protected:
+private:
     TextPrimitive_t()                                        = default;
     TextPrimitive_t(const TextPrimitive_t& other)            = delete;
     TextPrimitive_t& operator=(const TextPrimitive_t& other) = delete;
@@ -230,6 +239,8 @@ protected:
 
 class QuadPrimitive_t final : public Primitive_t
 {
+    friend class Renderer_t;
+
 protected:
     glm::vec4 colour_a        = { 1, 1, 1, 1 };
     glm::vec4 colour_b        = { 1, 0, 1, 1 };
@@ -248,7 +259,7 @@ public:
 
     std::vector<Vertex> getGeometry() override;
 
-protected:
+private:
     QuadPrimitive_t()                                        = default;
     QuadPrimitive_t(const QuadPrimitive_t& other)            = delete;
     QuadPrimitive_t& operator=(const QuadPrimitive_t& other) = delete;
@@ -272,10 +283,10 @@ private:
     std::vector<Vertex> vertices;
     std::vector<Index> indices;
 
-    const size_t max_dead_quads = 256;
+    const size_t max_dead_quads = 512;
     size_t dead_quads           = 0;
 
-    uint64_t next_backing_id = 3;
+    uint64_t next_primitive_id = 3;
 
     std::set<uint64_t> modified_primitives;
     std::map<uint64_t, std::pair<std::weak_ptr<Primitive_t>, BackingInternal>> primitives;
@@ -296,14 +307,15 @@ public:
     TextPrimitive addText();
     QuadPrimitive addQuad();
 
-    glm::vec2 getCharacterSize() const;
+    glm::vec2 getGlyphSize() const;
 
     void draw(Window window);
     void clear();
 
 private:
-    void configurePrimitive(std::shared_ptr<Primitive_t> prim);
-    void releasePrimitive(uint64_t id); // r->modified_primitives.erase(backing_id);
+    void configurePrimitive(Primitive primitive);
+    void ensureBacking(uint64_t primitive_id, size_t capacity);
+    void releasePrimitive(uint64_t primitive_id);
 };
 
 }; // namespace BBUI

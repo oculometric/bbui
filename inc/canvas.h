@@ -2,6 +2,7 @@
 
 #include "fwd.h"
 
+#include <glm/glm.hpp>
 #include <memory>
 
 namespace BBUI
@@ -249,6 +250,7 @@ public:
     void recedeFocus();
 
 private:
+    void redrawComponents();
     void arrangeComponents();
 };
 
