@@ -1,8 +1,11 @@
 #pragma once
 
+#include "fwd.h"
+
 #include <glm/glm.hpp>
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -38,21 +41,14 @@ struct Vertex final
     glm::vec2 uv;
 };
 
-typedef unsigned int Index;
-
-typedef std::shared_ptr<class Window_t> Window;
-typedef std::shared_ptr<class Renderer_t> Renderer;
-
 class Backend
 {
 public:
     Backend(Font font, Texture slice_atlas, Texture icon_atlas) {}
-    Backend()                            = default;
-    Backend(const Backend& other)        = delete;
-    Backend(Backend&& other)             = delete;
-    void operator=(const Backend& other) = delete;
-    void operator=(Backend&& other)      = delete;
-    virtual ~Backend()                   = default;
+    Backend()                                = default;
+    Backend(const Backend& other)            = delete;
+    Backend& operator=(const Backend& other) = delete;
+    virtual ~Backend()                       = default;
 
     virtual void mesh(const std::vector<Vertex>& vertices, const std::vector<Index>& indices,
         Renderer renderer) {};
@@ -79,11 +75,9 @@ private:
 
 public:
     Backend_OpenGL(Font font, Texture slice_atlas, Texture icon_atlas);
-    Backend_OpenGL()                            = delete;
-    Backend_OpenGL(const Backend_OpenGL& other) = delete;
-    Backend_OpenGL(Backend_OpenGL&& other)      = delete;
-    void operator=(const Backend_OpenGL& other) = delete;
-    void operator=(Backend_OpenGL&& other)      = delete;
+    Backend_OpenGL()                                       = delete;
+    Backend_OpenGL(const Backend_OpenGL& other)            = delete;
+    Backend_OpenGL& operator=(const Backend_OpenGL& other) = delete;
     ~Backend_OpenGL() override;
 
     void mesh(const std::vector<Vertex>& vertices, const std::vector<Index>& indices,
@@ -92,178 +86,177 @@ public:
     void draw(Window window) const override;
 };
 
-class Renderer_t final : public std::enable_shared_from_this<Renderer_t>
+struct Primitive_t
 {
-    friend class Backing;
+    friend class Renderer_t;
+
+protected:
+    glm::vec3 position = { 0, 0, 0 };
+    glm::vec2 size     = { 10, 10 };
+
+private:
+    uint64_t backing_id;
+    std::weak_ptr<Renderer_t> renderer;
 
 public:
-    struct Backing final
+    virtual ~Primitive_t();
+
+    virtual std::vector<Vertex> getGeometry();
+    virtual size_t getQuadCount();
+
+    void setPosition(glm::vec3 _position);
+    void setSize(glm::vec2 _size);
+
+protected:
+    Renderer getRenderer();
+    void setModified();
+    static std::vector<Vertex> makeQuad(glm::vec2 p1, glm::vec2 p2, glm::vec2 p3, glm::vec2 p4, float z,
+        glm::vec2 uv_tl, glm::vec2 uv_br, glm::vec4 colour_1, glm::vec4 colour_2, glm::vec4 data_1,
+        glm::vec4 data_2);
+
+private:
+    Primitive_t()                                    = default;
+    Primitive_t(const Primitive_t& other)            = delete;
+    Primitive_t& operator=(const Primitive_t& other) = delete;
+};
+
+struct RectPrimitive_t final : public Primitive_t
+{
+    friend class Renderer_t;
+
+public:
+    enum Borders : uint8_t
     {
-        friend class Renderer_t;
-
-    private:
-        uint64_t id;
-        std::weak_ptr<Renderer_t> renderer;
-
-    public:
-        ~Backing() { release(); }
-
-        void ensure(Index capacity);
-        void write(glm::vec2 p1, glm::vec2 p2, glm::vec2 p3, glm::vec2 p4, float z, glm::vec2 uv_tl,
-            glm::vec2 uv_br, glm::vec4 colour_1, glm::vec4 colour_2, glm::vec4 data_1, glm::vec4 data_2,
-            Index offset = 0);
-        void release();
+        RECT_BORDERS_ALL        = 0b1111,
+        RECT_BORDERS_NONE       = 0b0000,
+        RECT_BORDERS_TOP        = 0b0001,
+        RECT_BORDERS_BOTTOM     = 0b0010,
+        RECT_BORDERS_HORIZONTAL = 0b0011,
+        RECT_BORDERS_LEFT       = 0b0100,
+        RECT_BORDERS_RIGHT      = 0b1000,
+        RECT_BORDERS_VERTICAL   = 0b1100,
     };
 
-    class Primitive
+protected:
+    glm::vec4 fill_colour   = { 0.8f, 0.8f, 0.8f, 1.0f };
+    glm::vec4 border_colour = { 1.0f, 1.0f, 1.0f, 1.0f };
+    int pattern_index       = 0;
+    Borders borders         = RECT_BORDERS_ALL;
+
+public:
+    void setFill(glm::vec4 _fill_colour);
+    void setBorder(glm::vec4 _border_colour);
+    void setPattern(int _pattern_index);
+    void setBorders(Borders _borders);
+
+    std::vector<Vertex> getGeometry() override;
+
+private:
+    RectPrimitive_t()                                        = default;
+    RectPrimitive_t(const RectPrimitive_t& other)            = delete;
+    RectPrimitive_t& operator=(const RectPrimitive_t& other) = delete;
+};
+
+class IconPrimitive_t final : public Primitive_t
+{
+protected:
+    glm::vec4 foreground = { 1, 1, 1, 1 };
+    glm::vec4 background = { 0, 0, 0, 0 };
+    int icon_index       = 0;
+
+public:
+    void setForeground(glm::vec4 _foreground);
+    void setBackground(glm::vec4 _background);
+    void setIconIndex(int _icon_index);
+
+    std::vector<Vertex> getGeometry() override;
+
+protected:
+    IconPrimitive_t()                                        = default;
+    IconPrimitive_t(const IconPrimitive_t& other)            = delete;
+    IconPrimitive_t& operator=(const IconPrimitive_t& other) = delete;
+};
+
+class TextPrimitive_t final : public Primitive_t
+{
+public:
+    enum Align : uint8_t
     {
-        friend class Renderer_t;
-
-    protected:
-        Backing backing;
-        glm::vec3 position = { 0, 0, 0 };
-        glm::vec2 size     = { 10, 10 };
-        glm::vec4 colour_a = { 1, 1, 1, 1 };
-        glm::vec4 colour_b = { 0, 0, 0, 0 };
-
-    public:
-        virtual ~Primitive() {};
-
-        void setPosition(glm::vec3 _position);
-        void setSize(glm::vec2 _size);
-
-    protected:
-        virtual void update();
-
-    private:
-        Primitive()                            = default;
-        Primitive(const Primitive& other)      = delete;
-        Primitive(Primitive&& other)           = delete;
-        void operator=(const Primitive& other) = delete;
-        void operator=(Primitive&& other)      = delete;
+        TEXT_ALIGN_LEFT,
+        TEXT_ALIGN_CENTER,
+        TEXT_ALIGN_RIGHT
     };
 
-    class Text_t final : public Primitive
+    enum Flags : uint8_t
     {
-    public:
-        enum Align : uint8_t
-        {
-            TEXT_ALIGN_LEFT,
-            TEXT_ALIGN_CENTER,
-            TEXT_ALIGN_RIGHT
-        };
-
-        enum Flags : uint8_t
-        {
-            TEXT_FLAGS_NONE          = 0b000000,
-            TEXT_FLAGS_BOLD          = 0b000001,
-            TEXT_FLAGS_ITALIC        = 0b000010,
-            TEXT_FLAGS_UNDERLINE     = 0b000100,
-            TEXT_FLAGS_STRIKETHROUGH = 0b001000,
-            TEXT_FLAGS_WRAP          = 0b010000,
-            TEXT_FLAGS_CLIP          = 0b100000
-        };
-
-        struct Format final
-        {
-            Align align = TEXT_ALIGN_LEFT;
-            Flags flags = TEXT_FLAGS_NONE;
-            int spacing = 1;
-            float size  = 24;
-        };
-
-    protected:
-        std::string content;
-        Format format;
-
-    public:
-        ~Text_t() override {};
-
-        void setForeground(glm::vec4 _colour);
-        void setBackground(glm::vec4 _colour);
-        void setText(const std::string& _content);
-        void setFormat(const Format& _format);
-
-    protected:
-        void update() override; // TODO:
+        TEXT_FLAGS_NONE          = 0b000000,
+        TEXT_FLAGS_BOLD          = 0b000001,
+        TEXT_FLAGS_ITALIC        = 0b000010,
+        TEXT_FLAGS_UNDERLINE     = 0b000100,
+        TEXT_FLAGS_STRIKETHROUGH = 0b001000,
+        TEXT_FLAGS_WRAP          = 0b010000,
+        TEXT_FLAGS_CLIP          = 0b100000
     };
 
-    class NineSlice_t final : public Primitive
+    struct Format final
     {
-    public:
-        enum Borders : uint8_t
-        {
-            NS_BORDERS_ALL        = 0b1111,
-            NS_BORDERS_NONE       = 0b0000,
-            NS_BORDERS_TOP        = 0b0001,
-            NS_BORDERS_BOTTOM     = 0b0010,
-            NS_BORDERS_HORIZONTAL = 0b0011,
-            NS_BORDERS_LEFT       = 0b0100,
-            NS_BORDERS_RIGHT      = 0b1000,
-            NS_BORDERS_VERTICAL   = 0b1100,
-        };
-
-    protected:
-        int pattern_index = 0;
-        Borders borders   = NS_BORDERS_ALL;
-
-    public:
-        ~NineSlice_t() override {};
-
-        void setFill(glm::vec4 _colour);
-        void setBorder(glm::vec4 _colour);
-        void setPattern(int _pattern_index);
-        void setBorders(Borders _borders);
-
-    protected:
-        void update() override;
-
-    private:
-        NineSlice_t() { colour_b = { 1, 1, 1, 1 }; }
+        Align align        = TEXT_ALIGN_LEFT;
+        Flags flags        = TEXT_FLAGS_NONE;
+        float char_spacing = 1.0f;
+        float line_spacing = 1.0f;
+        float font_size    = 24.0f;
     };
 
-    class Icon_t final : public Primitive
-    {
-    protected:
-        int icon_index = 0;
+protected:
+    glm::vec4 foreground = { 1, 1, 1, 1 };
+    glm::vec4 background = { 0, 0, 0, 0 };
+    std::string content;
+    Format format;
 
-    public:
-        ~Icon_t() override {};
+public:
+    void setForeground(glm::vec4 _colour);
+    void setBackground(glm::vec4 _colour);
+    void setText(const std::string& _content);
+    void setFormat(const Format& _format);
 
-        void setForeground(glm::vec4 _colour);
-        void setBackground(glm::vec4 _colour);
-        void setIconIndex(int _icon_index);
+    std::vector<Vertex> getGeometry() override;
+    size_t getQuadCount() override;
 
-    protected:
-        void update() override;
-    };
+protected:
+    TextPrimitive_t()                                        = default;
+    TextPrimitive_t(const TextPrimitive_t& other)            = delete;
+    TextPrimitive_t& operator=(const TextPrimitive_t& other) = delete;
+};
 
-    class Quad_t final : public Primitive
-    {
-    protected:
-        glm::vec2 uv_top_left     = { 0, 0 };
-        glm::vec2 uv_bottom_right = { 1, 1 };
-        glm::vec4 data_1          = { 0, 0, 0, 0 };
-        glm::vec4 data_2          = { 0, 0, 0, 0 };
+class QuadPrimitive_t final : public Primitive_t
+{
+protected:
+    glm::vec4 colour_a        = { 1, 1, 1, 1 };
+    glm::vec4 colour_b        = { 1, 0, 1, 1 };
+    glm::vec2 uv_top_left     = { 0, 0 };
+    glm::vec2 uv_bottom_right = { 1, 1 };
+    glm::vec4 data_1          = { 0, 0, 0, 0 };
+    glm::vec4 data_2          = { 0, 0, 0, 0 };
 
-    public:
-        ~Quad_t() override {};
+public:
+    void setColourA(glm::vec4 _colour_a);
+    void setColourB(glm::vec4 _colour_b);
+    void setUVTopLeft(glm::vec2 _uv_top_left);
+    void setUVBottomRight(glm::vec2 _uv_bottom_right);
+    void setData1(glm::vec4 _data_1);
+    void setData2(glm::vec4 _data_2);
 
-        void setColourA(glm::vec4 _colour_a);
-        void setColourB(glm::vec4 _colour_b);
-        void setUVTopLeft(glm::vec2 _uv_top_left);
-        void setUVBottomRight(glm::vec2 _uv_bottom_right);
-        void setData1(glm::vec4 _data_1);
-        void setData2(glm::vec4 _data_2);
+    std::vector<Vertex> getGeometry() override;
 
-    protected:
-        void update() override;
-    };
+protected:
+    QuadPrimitive_t()                                        = default;
+    QuadPrimitive_t(const QuadPrimitive_t& other)            = delete;
+    QuadPrimitive_t& operator=(const QuadPrimitive_t& other) = delete;
+};
 
-    typedef std::shared_ptr<Text_t> Text;
-    typedef std::shared_ptr<NineSlice_t> NineSlice;
-    typedef std::shared_ptr<Icon_t> Icon;
-    typedef std::shared_ptr<Quad_t> Quad;
+class Renderer_t final : public std::enable_shared_from_this<Renderer_t>
+{
+    friend class Primitive_t;
 
 private:
     struct BackingInternal final
@@ -278,33 +271,39 @@ private:
 
     std::vector<Vertex> vertices;
     std::vector<Index> indices;
+
     const size_t max_dead_quads = 256;
     size_t dead_quads           = 0;
-    bool source_modified        = false;
-    std::map<uint64_t, BackingInternal> backing_map;
+
     uint64_t next_backing_id = 3;
 
+    std::set<uint64_t> modified_primitives;
+    std::map<uint64_t, std::pair<std::weak_ptr<Primitive_t>, BackingInternal>> primitives;
+
 public:
-    glm::mat3 transform       = glm::mat3(1.0);
     bool force_dithered_alpha = false;
     bool pixel_perfect        = true;
     bool anti_alias           = true;
 
 public:
     Renderer_t();
-    Renderer_t(const Renderer_t& other)     = delete;
-    Renderer_t(Renderer_t&& other)          = delete;
-    void operator=(const Renderer_t& other) = delete;
-    void operator=(Renderer_t&& other)      = delete;
-    ~Renderer_t()                           = default;
+    Renderer_t(const Renderer_t& other)            = delete;
+    Renderer_t& operator=(const Renderer_t& other) = delete;
+    ~Renderer_t()                                  = default;
 
-    Text createText();
-    NineSlice createNineSlice();
-    Icon createIcon();
-    Quad createQuad();
+    RectPrimitive addRect();
+    IconPrimitive addIcon();
+    TextPrimitive addText();
+    QuadPrimitive addQuad();
+
+    glm::vec2 getCharacterSize() const;
 
     void draw(Window window);
     void clear();
+
+private:
+    void configurePrimitive(std::shared_ptr<Primitive_t> prim);
+    void releasePrimitive(uint64_t id); // r->modified_primitives.erase(backing_id);
 };
 
 }; // namespace BBUI

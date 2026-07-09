@@ -1,6 +1,6 @@
 #pragma once
 
-#include "window.h"
+#include "fwd.h"
 
 #include <memory>
 
@@ -11,8 +11,6 @@ class Style
 {
     // TODO: this!
 };
-
-class Component_t;
 
 struct Transform
 {
@@ -119,9 +117,6 @@ public:
     std::array<glm::vec2, 2> getRenderPositionAndSize();
 };
 
-typedef std::shared_ptr<class Component_t> Component;
-class Canvas_t;
-
 class Component_t : public std::enable_shared_from_this<Component_t>
 {
     friend class Canvas_t;
@@ -155,11 +150,9 @@ private:
 
 public:
     Component_t();
-    Component_t(const Component_t& other)    = delete;
-    Component_t(Component_t&& other)         = delete;
-    void operator=(const Component_t& other) = delete;
-    void operator=(Component_t&& other)      = delete;
-    virtual ~Component_t()                   = default;
+    Component_t(const Component_t& other)            = delete;
+    Component_t& operator=(const Component_t& other) = delete;
+    virtual ~Component_t()                           = default;
 
     // called once per frame
     virtual void update() {}
@@ -210,18 +203,16 @@ public:
     void requestFocus();
 
     Component findChildByName(const std::string& name) const;
-    Component addChild(Component child) { return canvas.lock()->insert(child, shared_from_this()); }
+    Component addChild(Component child);
     std::vector<Component>::iterator getChildrenBegin() { return children.begin(); }
     std::vector<Component>::iterator getChildrenEnd() { return children.end(); }
     Component getParent() const { return parent.lock(); }
 
 private:
     void updateSelfAndChildren();
-    void redrawSelfAndChildren();
+    void redrawSelfAndChildren(); // TODO: overhaul this.
     void arrangeSelfAndChildren();
 };
-
-typedef std::shared_ptr<class Renderer_t> Renderer;
 
 class Canvas_t : public std::enable_shared_from_this<Canvas_t>
 {
@@ -240,11 +231,9 @@ private:
 
 public:
     Canvas_t();
-    Canvas_t(const Canvas_t& other)       = delete;
-    Canvas_t(Canvas_t&& other)            = delete;
-    void operator=(const Canvas_t& other) = delete;
-    void operator=(Canvas_t&& other)      = delete;
-    ~Canvas_t()                           = default;
+    Canvas_t(const Canvas_t& other)            = delete;
+    Canvas_t& operator=(const Canvas_t& other) = delete;
+    ~Canvas_t()                                = default;
 
     void update();
     void checkInput(Window window);
@@ -253,17 +242,14 @@ public:
     void setStyle(Style new_style);
     void setSizeOverride(glm::vec2 size);
     void clearSizeOverride();
-    
+
     Component insert(Component component, Component parent);
     void setFocus(Component component);
     void advanceFocus();
     void recedeFocus();
 
 private:
-    void redrawComponents();
     void arrangeComponents();
 };
-
-typedef std::shared_ptr<Canvas_t> Canvas;
 
 } // namespace BBUI

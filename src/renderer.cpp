@@ -150,19 +150,25 @@ Renderer_t::Quad Renderer_t::createQuad()
 
 void Renderer_t::draw(Window window)
 {
-    if (source_modified) backend->mesh(vertices, indices, shared_from_this());
-    source_modified = false;
-    if (next_backing_id == 0) next_backing_id = 3;
-    // TODO: handle realloc upon max dead quads - move everything backwards and modify the backing data to
-    // preserve the timeline
+    // TODO: check if there are modified elements
+    // TODO: check to see if their backing is valid or they want a different bigger backing size this time (and fix that first)
+    // TODO: check if we need to realloc (max dead quads), in which case call clear
+    // TODO: request new data from each one (if we realloced, or that specific one was modified), and clear the modified list
+
+
+    // if (source_modified) backend->mesh(vertices, indices, shared_from_this());
+    // source_modified = false;
+    // if (next_backing_id == 0) next_backing_id = 3;
+    // // TODO: handle realloc upon max dead quads - move everything backwards and modify the backing data to
+    // // preserve the timeline
     backend->bind(window, shared_from_this());
     backend->draw(window);
 }
 
 void Renderer_t::clear()
 {
-    vertices.clear();
-    indices.clear();
-    backing_map.clear();
-    source_modified = true;
+    // vertices.clear();
+    // indices.clear();
+    // backing_map.clear();
+    // source_modified = true;
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "fwd.h"
+
 #include <array>
 #include <glm/glm.hpp>
 #include <map>
@@ -132,7 +134,6 @@ enum CursorType : uint8_t
     CURSOR_MAX_ENUM   // invalid cursor type used for iterating the enum
 };
 
-typedef std::shared_ptr<class Window_t> Window;
 
 class Surface
 {
@@ -140,13 +141,11 @@ protected:
     std::weak_ptr<class Window_t> owner;
 
 public:
-    Surface() = delete;
     Surface(Window window) : owner(window) {}
-    Surface(const Surface& other)        = delete;
-    Surface(Surface&& other)             = delete;
-    void operator=(const Surface& other) = delete;
-    void operator=(Surface&& other)      = delete;
-    virtual ~Surface()                   = default;
+    Surface()                                = delete;
+    Surface(const Surface& other)            = delete;
+    Surface& operator=(const Surface& other) = delete;
+    virtual ~Surface()                       = default;
 
     virtual void clear() {}
     virtual void present() {}
@@ -155,12 +154,10 @@ public:
 class Surface_OpenGL : public Surface
 {
 public:
-    Surface_OpenGL() = delete;
     Surface_OpenGL(Window window);
-    Surface_OpenGL(const Surface_OpenGL& other) = delete;
-    Surface_OpenGL(Surface_OpenGL&& other)      = delete;
-    void operator=(const Surface_OpenGL& other) = delete;
-    void operator=(Surface_OpenGL&& other)      = delete;
+    Surface_OpenGL()                                       = delete;
+    Surface_OpenGL(const Surface_OpenGL& other)            = delete;
+    Surface_OpenGL& operator=(const Surface_OpenGL& other) = delete;
     ~Surface_OpenGL() override;
 
     void clear() override;
@@ -195,12 +192,10 @@ private:
     std::unique_ptr<Surface> surface;
 
 public:
-    Window_t() = delete;
     Window_t(const struct Texture& icon);
-    Window_t(const Window_t& other)       = delete;
-    Window_t(Window_t&& other)            = delete;
-    void operator=(const Window_t& other) = delete;
-    void operator=(Window_t&& other)      = delete;
+    Window_t()                                 = delete;
+    Window_t(const Window_t& other)            = delete;
+    Window_t& operator=(const Window_t& other) = delete;
     ~Window_t();
 
     void setTitle(const std::string& title);

@@ -213,6 +213,9 @@ Component Component_t::findChildByName(const std::string& name) const
     }
 }
 
+Component Component_t::addChild(Component child)
+{ return canvas.lock()->insert(child, shared_from_this()); }
+
 void Component_t::updateSelfAndChildren()
 {
     update();
