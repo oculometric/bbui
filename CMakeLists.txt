@@ -74,6 +74,7 @@ set(COMBINED_FILE "/*
 #endif
 
 #pragma region BBUI_DECLARATIONS\n\n")
+get_file_content(${CMAKE_CURRENT_SOURCE_DIR}/inc/fwd.h COMBINED_FILE)
 get_file_content(${CMAKE_CURRENT_SOURCE_DIR}/inc/window.h COMBINED_FILE)
 get_file_content(${CMAKE_CURRENT_SOURCE_DIR}/inc/rendering.h COMBINED_FILE)
 get_file_content(${CMAKE_CURRENT_SOURCE_DIR}/inc/canvas.h COMBINED_FILE)
@@ -82,13 +83,15 @@ string(APPEND COMBINED_FILE "\n\n#pragma endregion BBUI_DECLARATIONS
 
 #pragma region BBUI_IMPLEMENTATIONS
 #if defined(BBUI_IMPLEMENTATION)\n\n")
-get_file_content(${CMAKE_CURRENT_SOURCE_DIR}/src/window.cpp COMBINED_FILE)
 get_file_content(${CMAKE_CURRENT_SOURCE_DIR}/src/backend_opengl.cpp COMBINED_FILE)
-get_file_content(${CMAKE_CURRENT_SOURCE_DIR}/src/surface_opengl.cpp COMBINED_FILE)
+get_file_content(${CMAKE_CURRENT_SOURCE_DIR}/src/canvas.cpp COMBINED_FILE)
 get_file_content(${CMAKE_CURRENT_SOURCE_DIR}/src/default_textures.cpp COMBINED_FILE)
 get_file_content(${CMAKE_CURRENT_SOURCE_DIR}/src/renderer_primitives.cpp COMBINED_FILE)
 get_file_content(${CMAKE_CURRENT_SOURCE_DIR}/src/renderer.cpp COMBINED_FILE)
-get_file_content(${CMAKE_CURRENT_SOURCE_DIR}/src/canvas.cpp COMBINED_FILE)
+get_file_content(${CMAKE_CURRENT_SOURCE_DIR}/src/style.cpp COMBINED_FILE)
+get_file_content(${CMAKE_CURRENT_SOURCE_DIR}/src/surface_opengl.cpp COMBINED_FILE)
+get_file_content(${CMAKE_CURRENT_SOURCE_DIR}/src/transform.cpp COMBINED_FILE)
+get_file_content(${CMAKE_CURRENT_SOURCE_DIR}/src/window.cpp COMBINED_FILE)
 string(APPEND COMBINED_FILE "\n\n#endif
 #pragma endregion BBUI_IMPLEMENTATIONS\n")
 
