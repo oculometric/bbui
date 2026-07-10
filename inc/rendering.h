@@ -14,8 +14,8 @@ namespace BBUI
 
 struct Texture final
 {
-    const unsigned char* data;
-    const size_t size;
+    unsigned char* data;
+    size_t size;
 
     static Texture getDefaultSliceTexture();
     static Texture getDefaultIconTexture();
@@ -236,6 +236,13 @@ private:
     TextPrimitive_t(const TextPrimitive_t& other)            = delete;
     TextPrimitive_t& operator=(const TextPrimitive_t& other) = delete;
 };
+
+typedef TextPrimitive_t::Format TextFormat;
+typedef TextPrimitive_t::Flags TextFlags;
+typedef TextPrimitive_t::Align TextAlign;
+
+inline TextFlags operator|(TextFlags a, TextFlags b)
+{ return static_cast<TextFlags>(static_cast<uint8_t>(a) | static_cast<uint8_t>(b)); }
 
 class QuadPrimitive_t final : public Primitive_t
 {

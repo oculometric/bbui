@@ -42,7 +42,8 @@ typedef std::shared_ptr<QuadPrimitive_t> QuadPrimitive;
 
 // canvas.h
 
-class Style;
+class Style_t;
+typedef std::shared_ptr<Style_t> Style;
 struct Transform;
 
 class Canvas_t;
@@ -51,8 +52,6 @@ class Component_t;
 typedef std::shared_ptr<Component_t> Component;
 
 // components.h
-
-
 
 // PYRT??
 

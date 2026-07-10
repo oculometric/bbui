@@ -12,7 +12,7 @@ Renderer_t::Renderer_t()
 
 RectPrimitive Renderer_t::addRect()
 {
-    std::shared_ptr<RectPrimitive_t> primitive;
+    RectPrimitive primitive;
     primitive.reset(new RectPrimitive_t());
     configurePrimitive(std::static_pointer_cast<Primitive_t>(primitive));
     return primitive;
@@ -20,7 +20,7 @@ RectPrimitive Renderer_t::addRect()
 
 IconPrimitive Renderer_t::addIcon()
 {
-    std::shared_ptr<IconPrimitive_t> primitive;
+    IconPrimitive primitive;
     primitive.reset(new IconPrimitive_t());
     configurePrimitive(std::static_pointer_cast<Primitive_t>(primitive));
     return primitive;
@@ -28,7 +28,7 @@ IconPrimitive Renderer_t::addIcon()
 
 TextPrimitive Renderer_t::addText()
 {
-    std::shared_ptr<TextPrimitive_t> primitive;
+    TextPrimitive primitive;
     primitive.reset(new TextPrimitive_t());
     configurePrimitive(std::static_pointer_cast<Primitive_t>(primitive));
     return primitive;
@@ -36,7 +36,7 @@ TextPrimitive Renderer_t::addText()
 
 QuadPrimitive Renderer_t::addQuad()
 {
-    std::shared_ptr<QuadPrimitive_t> primitive;
+    QuadPrimitive primitive;
     primitive.reset(new QuadPrimitive_t());
     configurePrimitive(std::static_pointer_cast<Primitive_t>(primitive));
     return primitive;

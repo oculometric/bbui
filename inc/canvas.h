@@ -1,16 +1,125 @@
 #pragma once
 
 #include "fwd.h"
+#include "rendering.h"
 
+#include <array>
 #include <glm/glm.hpp>
+#include <map>
 #include <memory>
 
 namespace BBUI
 {
 
-class Style
+class Style_t
 {
-    // TODO: this!
+public:
+    static constexpr const char* TEXT_LABEL       = "Style::TEXT::LABEL";
+    static constexpr const char* TEXT_BUTTON      = "Style::TEXT::BUTTON";
+    static constexpr const char* TEXT_TITLE       = "Style::TEXT::TITLE";
+    static constexpr const char* TEXT_MINIHEADING = "Style::TEXT::MINIHEADING";
+    static constexpr const char* TEXT_SMALL       = "Style::TEXT::SMALL";
+
+    static constexpr const char* CONST_GENERIC_SPACING        = "Style::CONST::GENERIC::SPACING";
+    static constexpr const char* CONST_GENERIC_LINEHEIGHT     = "Style::CONST::GENERIC::LINEHEIGHT";
+    static constexpr const char* CONST_GENERIC_ICONSIZE       = "Style::CONST::GENERIC::ICONSIZE";
+    static constexpr const char* CONST_GENERIC_EDGEWIDTH      = "Style::CONST::GENERIC::EDGEWIDTH";
+    static constexpr const char* CONST_GENERIC_ABOVETEXT      = "Style::CONST::GENERIC::ABOVETEXT";
+    static constexpr const char* CONST_MENU_BEFOREITEM        = "Style::CONST::MENU::BEFOREITEM";
+    static constexpr const char* CONST_LABEL_AROUNDTEXT       = "Style::CONST::LABEL::AROUNDTEXT";
+    static constexpr const char* CONST_BUTTON_AROUNDTEXT      = "Style::CONST::BUTTON::AROUNDTEXT";
+    static constexpr const char* CONST_BUTTON_BETWEENICONTEXT = "Style::CONST::BUTTON::BETWEENICONTEXT";
+    static constexpr const char* CONST_BUTTON_AROUNDICON      = "Style::CONST::BUTTON::AROUNDICON";
+    static constexpr const char* CONST_RADIOBUTTON_BETWEENOPTIONS =
+        "Style::CONST::RADIOBUTTON::BETWEENOPTIONS";
+    static constexpr const char* CONST_RADIOBUTTON_BETWEENTAGTEXT =
+        "Style::CONST::RADIOBUTTON::BETWEENTAGTEXT";
+    static constexpr const char* CONST_PANEL_AROUNDCONTENT  = "Style::CONST::PANEL::AROUNDCONTENT";
+    static constexpr const char* CONST_PANEL_BANNERHEIGHT   = "Style::CONST::PANEL::BANNERHEIGHT";
+    static constexpr const char* CONST_DIALOG_BUTTONSPACING = "Style::CONST::DIALOG_BUTTONSPACING";
+
+    static constexpr const char* ICON_CLOSE            = "Style::ICON::CLOSE";
+    static constexpr const char* ICON_MINIMISE         = "Style::ICON::MINIMISE";
+    static constexpr const char* ICON_REFRESH          = "Style::ICON::REFRESH";
+    static constexpr const char* ICON_TRIANGLEUP       = "Style::ICON::TRIANGLEUP";
+    static constexpr const char* ICON_TRIANGLEDOWN     = "Style::ICON::TRIANGLEDOWN";
+    static constexpr const char* ICON_TRIANGLELEFT     = "Style::ICON::TRIANGLELEFT";
+    static constexpr const char* ICON_TRIANGLERIGHT    = "Style::ICON::TRIANGLERIGHT";
+    static constexpr const char* ICON_ARROWUP          = "Style::ICON::ARROWUP";
+    static constexpr const char* ICON_ARROWDOWN        = "Style::ICON::ARROWDOWN";
+    static constexpr const char* ICON_ARROWLEFT        = "Style::ICON::ARROWLEFT";
+    static constexpr const char* ICON_ARROWRIGHT       = "Style::ICON::ARROWRIGHT";
+    static constexpr const char* ICON_UNFOLDED         = "Style::ICON::UNFOLDED";
+    static constexpr const char* ICON_FOLDED           = "Style::ICON::FOLDED";
+    static constexpr const char* ICON_UNDO             = "Style::ICON::UNDO";
+    static constexpr const char* ICON_REDO             = "Style::ICON::REDO";
+    static constexpr const char* ICON_SAVE             = "Style::ICON::SAVE";
+    static constexpr const char* ICON_NEW              = "Style::ICON::NEW";
+    static constexpr const char* ICON_IMPORT           = "Style::ICON::IMPORT";
+    static constexpr const char* ICON_EXPORT           = "Style::ICON::EXPORT";
+    static constexpr const char* ICON_WARNINGTRIANGLE  = "Style::ICON::WARNINGTRIANGLE";
+    static constexpr const char* ICON_QUESTIONTRIANGLE = "Style::ICON::QUESTIONTRIANGLE";
+    static constexpr const char* ICON_CHECKMARK        = "Style::ICON::CHECKMARK";
+    static constexpr const char* ICON_SMALLDOT         = "Style::ICON::SMALLDOT";
+    static constexpr const char* ICON_FILE             = "Style::ICON::FILE";
+    static constexpr const char* ICON_FOLDER           = "Style::ICON::FOLDER";
+    static constexpr const char* ICON_WORLD            = "Style::ICON::WORLD";
+    static constexpr const char* ICON_TARGET           = "Style::ICON::TARGET";
+    static constexpr const char* ICON_WRENCH           = "Style::ICON::WRENCH";
+    static constexpr const char* ICON_MAGNIFIER        = "Style::ICON::MAGNIFIER";
+    static constexpr const char* ICON_HEART            = "Style::ICON::HEART";
+    static constexpr const char* ICON_CLUB             = "Style::ICON::CLUB";
+    static constexpr const char* ICON_SPADE            = "Style::ICON::SPADE";
+    static constexpr const char* ICON_DIAMOND          = "Style::ICON::DIAMOND";
+    static constexpr const char* ICON_EYE              = "Style::ICON::EYE";
+    static constexpr const char* ICON_CASSETTE         = "Style::ICON::CASSETTE";
+    static constexpr const char* ICON_BOXHOLLOW        = "Style::ICON::BOXHOLLOW";
+    static constexpr const char* ICON_BOXFILLED        = "Style::ICON::BOXFILLED";
+    static constexpr const char* ICON_BOXCORNERS       = "Style::ICON::BOXCORNERS";
+    static constexpr const char* ICON_BOXHIGHLIGHT     = "Style::ICON::BOXHIGHLIGHT";
+    static constexpr const char* ICON_CIRCLEHOLLOW     = "Style::ICON::CIRCLEHOLLOW";
+    static constexpr const char* ICON_CIRCLEFILLED     = "Style::ICON::CIRCLEFILLED";
+    static constexpr const char* ICON_TRIANGLEHOLLOW   = "Style::ICON::TRIANGLEHOLLOW";
+    static constexpr const char* ICON_TRIANGLEFILLED   = "Style::ICON::TRIANGLEFILLED";
+    static constexpr const char* ICON_TRIANGLECORNERS  = "Style::ICON::TRIANGLECORNERS";
+    static constexpr const char* ICON_CHAINLINKED      = "Style::ICON::CHAINLINKED";
+    static constexpr const char* ICON_CHAINBROKEN      = "Style::ICON::CHAINBROKEN";
+    static constexpr const char* ICON_CUBE             = "Style::ICON::CUBE";
+    static constexpr const char* ICON_SPHERE           = "Style::ICON::SPHERE";
+    static constexpr const char* ICON_CAMERA           = "Style::ICON::CAMERA";
+    static constexpr const char* ICON_MICROPHONE       = "Style::ICON::MICROPHONE";
+    static constexpr const char* ICON_AXES             = "Style::ICON::AXES";
+    static constexpr const char* ICON_GIZMOMOVE        = "Style::ICON::GIZMOMOVE";
+    static constexpr const char* ICON_GIZMOROTATE      = "Style::ICON::GIZMOROTATE";
+    static constexpr const char* ICON_GIZMOSCALE       = "Style::ICON::GIZMOSCALE";
+
+private:
+    Font font;
+    Texture slice_texture;
+    Texture icon_texture;
+
+    std::map<std::string, TextFormat> text_formats;
+    std::map<std::string, float> constants;
+    std::map<std::string, int> icons;
+
+public:
+    Style_t(const std::string& stylesheet);
+    Style_t(const Style_t& other)            = delete;
+    Style_t& operator=(const Style_t& other) = delete;
+    ~Style_t()                               = default;
+
+    Font getFont() const { return font; }
+    Texture getSliceTexture() const { return slice_texture; }
+    Texture getIconTexture() const { return icon_texture; }
+
+    TextFormat getTextFormatting(const std::string& identifier) const;
+    float getConstant(const std::string& identifier) const;
+    int getIcon(const std::string& identifier) const;
+
+    static Style getDefaultStyle();
+
+private:
+    Style_t();
 };
 
 struct Transform

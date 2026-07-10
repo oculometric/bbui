@@ -1,4 +1,5 @@
 #include "rendering.h"
+#include "canvas.h"
 
 using namespace BBUI;
 
@@ -26,3 +27,98 @@ Font Font::getRobotoFont()
 
 Font Font::getIBMFont()
 { return { { ibm_font, ibm_font_size }, { ibm_font, ibm_font_size }, { 12, 23 } }; }
+
+
+Style Style_t::getDefaultStyle()
+{
+    Style style;
+    style.reset(new Style_t());
+
+    style->font          = Font::getRobotoFont();
+    style->slice_texture = Texture::getDefaultSliceTexture();
+    style->icon_texture  = Texture::getDefaultIconTexture();
+
+    style->text_formats[TEXT_LABEL] = TextFormat{ TextAlign::TEXT_ALIGN_LEFT,
+        TextFlags::TEXT_FLAGS_NONE | TextFlags::TEXT_FLAGS_CLIP, 1.0f, 2.0f, 24.0f };
+    style->text_formats[TEXT_BUTTON] =
+        TextFormat{ TextAlign::TEXT_ALIGN_CENTER, TextFlags::TEXT_FLAGS_BOLD, 1.0f, 4.0f, 24.0f };
+    style->text_formats[TEXT_TITLE] =
+        TextFormat{ TextAlign::TEXT_ALIGN_CENTER, TextFlags::TEXT_FLAGS_BOLD, 1.0f, 4.0f, 32.0f };
+    style->text_formats[TEXT_MINIHEADING] =
+        TextFormat{ TextAlign::TEXT_ALIGN_CENTER, TextFlags::TEXT_FLAGS_BOLD, 1.0f, 4.0f, 16.0f };
+    style->text_formats[TEXT_SMALL] =
+        TextFormat{ TextAlign::TEXT_ALIGN_LEFT, TextFlags::TEXT_FLAGS_ITALIC, 1.0f, 4.0f, 16.0f };
+
+    style->constants[CONST_GENERIC_SPACING]            = 2.0f;
+    style->constants[CONST_GENERIC_LINEHEIGHT]         = 28.0f;
+    style->constants[CONST_GENERIC_ICONSIZE]           = 24.0f;
+    style->constants[CONST_GENERIC_EDGEWIDTH]          = 4.0f;
+    style->constants[CONST_GENERIC_ABOVETEXT]          = -2.0f;
+    style->constants[CONST_MENU_BEFOREITEM]            = 8.0f;
+    style->constants[CONST_LABEL_AROUNDTEXT]           = 1.0f;
+    style->constants[CONST_BUTTON_AROUNDTEXT]          = 1.0f;
+    style->constants[CONST_BUTTON_BETWEENICONTEXT]     = 4.0f;
+    style->constants[CONST_BUTTON_AROUNDICON]          = 2.0f;
+    style->constants[CONST_RADIOBUTTON_BETWEENOPTIONS] = 2.0f;
+    style->constants[CONST_RADIOBUTTON_BETWEENTAGTEXT] = 8.0f;
+    style->constants[CONST_PANEL_AROUNDCONTENT]        = 4.0f;
+    style->constants[CONST_PANEL_BANNERHEIGHT]         = 16.0f;
+    style->constants[CONST_DIALOG_BUTTONSPACING]       = 48.0f;
+
+    style->constants[ICON_CLOSE]            = 0;
+    style->constants[ICON_MINIMISE]         = 1;
+    style->constants[ICON_REFRESH]          = 2;
+    style->constants[ICON_TRIANGLEUP]       = 3;
+    style->constants[ICON_TRIANGLEDOWN]     = 4;
+    style->constants[ICON_TRIANGLELEFT]     = 5;
+    style->constants[ICON_TRIANGLERIGHT]    = 6;
+    style->constants[ICON_ARROWUP]          = 7;
+    style->constants[ICON_ARROWDOWN]        = 8;
+    style->constants[ICON_ARROWLEFT]        = 9;
+    style->constants[ICON_ARROWRIGHT]       = 10;
+    style->constants[ICON_UNFOLDED]         = 11;
+    style->constants[ICON_FOLDED]           = 12;
+    style->constants[ICON_UNDO]             = 13;
+    style->constants[ICON_REDO]             = 14;
+    style->constants[ICON_SAVE]             = 15;
+    style->constants[ICON_NEW]              = 16;
+    style->constants[ICON_IMPORT]           = 17;
+    style->constants[ICON_EXPORT]           = 18;
+    style->constants[ICON_WARNINGTRIANGLE]  = 19;
+    style->constants[ICON_QUESTIONTRIANGLE] = 20;
+    style->constants[ICON_CHECKMARK]        = 21;
+    style->constants[ICON_SMALLDOT]         = 22;
+    style->constants[ICON_FILE]             = 23;
+    style->constants[ICON_FOLDER]           = 24;
+    style->constants[ICON_WORLD]            = 25;
+    style->constants[ICON_TARGET]           = 26;
+    style->constants[ICON_WRENCH]           = 27;
+    style->constants[ICON_MAGNIFIER]        = 28;
+    style->constants[ICON_HEART]            = 29;
+    style->constants[ICON_CLUB]             = 30;
+    style->constants[ICON_SPADE]            = 31;
+    style->constants[ICON_DIAMOND]          = 32;
+    style->constants[ICON_EYE]              = 33;
+    style->constants[ICON_CASSETTE]         = 34;
+    style->constants[ICON_BOXHOLLOW]        = 35;
+    style->constants[ICON_BOXFILLED]        = 36;
+    style->constants[ICON_BOXCORNERS]       = 37;
+    style->constants[ICON_BOXHIGHLIGHT]     = 38;
+    style->constants[ICON_CIRCLEHOLLOW]     = 39;
+    style->constants[ICON_CIRCLEFILLED]     = 40;
+    style->constants[ICON_TRIANGLEHOLLOW]   = 41;
+    style->constants[ICON_TRIANGLEFILLED]   = 42;
+    style->constants[ICON_TRIANGLECORNERS]  = 43;
+    style->constants[ICON_CHAINLINKED]      = 44;
+    style->constants[ICON_CHAINBROKEN]      = 45;
+    style->constants[ICON_CUBE]             = 46;
+    style->constants[ICON_SPHERE]           = 47;
+    style->constants[ICON_CAMERA]           = 48;
+    style->constants[ICON_MICROPHONE]       = 49;
+    style->constants[ICON_AXES]             = 50;
+    style->constants[ICON_GIZMOMOVE]        = 51;
+    style->constants[ICON_GIZMOROTATE]      = 52;
+    style->constants[ICON_GIZMOSCALE]       = 53;
+
+    return style;
+}
