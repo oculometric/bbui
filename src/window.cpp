@@ -68,7 +68,7 @@ void Window_t::mouseFunction(GLFWwindow* window, int button, int action, int mod
 void Window_t::scrollFunction(GLFWwindow* window, double xoffset, double yoffset)
 { windows[window]->scroll_delta += static_cast<float>(yoffset); }
 
-Window_t::Window_t(const Texture& icon)
+Window_t::Window_t(const std::string& title, const Texture& icon)
 {
     // init glfw if it isnt already
     if (windows.empty())
@@ -86,7 +86,7 @@ Window_t::Window_t(const Texture& icon)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
     glfwWindowHint(GLFW_SAMPLES, 4); // TODO: need control of this!
-    window = glfwCreateWindow(1024, 1024, "ariaflow", nullptr, nullptr);
+    window = glfwCreateWindow(1024, 1024, title.c_str(), nullptr, nullptr);
     glfwFocusWindow(window);
     glfwShowWindow(window);
     glfwSwapInterval(1);
@@ -115,15 +115,15 @@ Window_t::Window_t(const Texture& icon)
     cursors[CURSOR_BUSY]              = glfwCreateStandardCursor(GLFW_NOT_ALLOWED_CURSOR);
 
     // set icon
-    GLFWimage image;
-    int img_channels;
-    image.pixels = stbi_load_from_memory(icon.data, static_cast<int>(icon.size), &image.width,
-        &image.height, &img_channels, STBI_rgb_alpha);
-    glfwSetWindowIcon(window, 1, &image);
-    stbi_image_free(image.pixels);
-
-    // configure surface
-    surface.reset(reinterpret_cast<Surface*>(new Surface_OpenGL(shared_from_this())));
+    if (icon.data != nullptr)
+    {
+        GLFWimage image;
+        int img_channels;
+        image.pixels = stbi_load_from_memory(icon.data, static_cast<int>(icon.size), &image.width,
+            &image.height, &img_channels, STBI_rgb_alpha);
+        glfwSetWindowIcon(window, 1, &image);
+        stbi_image_free(image.pixels);
+    }
 
     // insert into the window map for input redirection
     windows[window] = this;
@@ -311,3 +311,11 @@ void Window_t::triggerShortcut(const std::string& action)
 void Window_t::writeClipboard(const std::string& value) { glfwSetClipboardString(window, value.c_str()); }
 
 std::string Window_t::readClipboard() { return glfwGetClipboardString(window); }
+
+Window Window_t::create(const std::string& title, const Texture& icon)
+{
+    Window window;
+    window.reset(new Window_t(title, icon));
+    window->surface.reset(reinterpret_cast<Surface*>(new Surface_OpenGL(window)));
+    return window;
+}

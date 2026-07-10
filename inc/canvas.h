@@ -30,6 +30,7 @@ public:
     static constexpr const char* CONST_BUTTON_AROUNDTEXT      = "Style::CONST::BUTTON::AROUNDTEXT";
     static constexpr const char* CONST_BUTTON_BETWEENICONTEXT = "Style::CONST::BUTTON::BETWEENICONTEXT";
     static constexpr const char* CONST_BUTTON_AROUNDICON      = "Style::CONST::BUTTON::AROUNDICON";
+    static constexpr const char* CONST_BUTTON_CLICKOFFSET     = "Style::CONST::BUTTON::CLICKOFFSET";
     static constexpr const char* CONST_RADIOBUTTON_BETWEENOPTIONS =
         "Style::CONST::RADIOBUTTON::BETWEENOPTIONS";
     static constexpr const char* CONST_RADIOBUTTON_BETWEENTAGTEXT =
@@ -119,7 +120,7 @@ public:
     static Style getDefaultStyle();
 
 private:
-    Style_t();
+    Style_t() = default;
 };
 
 struct Transform
@@ -182,7 +183,7 @@ public:
     };
 
 public:
-    std::weak_ptr<Component_t> owner;
+    Component_t* owner = nullptr;
 
 private:
     glm::vec2 position     = { 0, 0 };
@@ -317,6 +318,9 @@ public:
     std::vector<Component>::iterator getChildrenBegin() { return children.begin(); }
     std::vector<Component>::iterator getChildrenEnd() { return children.end(); }
     Component getParent() const { return parent.lock(); }
+    Style getStyle() const;
+    Renderer getRenderer() const;
+    void markDirty() { transform.setModified(); }
 
 private:
     void updateSelfAndChildren();
@@ -350,6 +354,8 @@ public:
     void draw(Window window);
 
     void setStyle(Style new_style);
+    Style getStyle() const { return style; }
+    Renderer getRenderer() const { return renderer; }
     void setSizeOverride(glm::vec2 size);
     void clearSizeOverride();
 

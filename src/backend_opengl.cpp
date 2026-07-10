@@ -26,12 +26,14 @@ out vec4 colour_2;
 out vec4 data_1;
 out vec4 data_2;
 out vec2 uv;
+out float z;
 
 uniform mat4 world_to_clip;
 
 void main()
 {
     position = vertex_position.xy;
+    z = vertex_position.z;
     colour_1 = vertex_colour_1;
     colour_2 = vertex_colour_2;
     data_1 = vertex_data_1;
@@ -51,6 +53,7 @@ in vec4 colour_2;
 in vec4 data_1;
 in vec4 data_2;
 in vec2 uv;
+in float z;
 
 out vec4 frag_colour;
 
@@ -102,11 +105,20 @@ vec2 nineSliceUV(vec2 uv, vec2 quad_size, vec2 atlas_size, bool top_border, bool
     return new_uv;
 }
 
+const float dither_map_4[16] =
+float[](
+    0,  8,  2, 10,
+    12,  4, 14,  6,
+    3, 11,  1,  9,
+    15,  7, 13,  5
+);
+
 void main()
 {
     int draw_mode = int(round(data_1.x));
     vec2 quad_size = data_1.yz;
     ivec2 screen_coord = ivec2(position.xy);
+    vec4 final_colour;
 
     if (draw_mode == 0)         // text mode
     {
@@ -142,7 +154,7 @@ void main()
         }
 
         vec4 target_colour = mix(colour_2, colour_1, pow(tex_value, 1.0f));
-        frag_colour = target_colour;
+        final_colour = target_colour;
     }
     else if (draw_mode == 1)    // 9-slice mode
     {
@@ -156,7 +168,7 @@ void main()
         vec4 tex_colour = texture(slice_atlas, (ns_uv + ns_off) / 2.0f);
 
         vec4 target_colour = (tex_colour.rgb == vec3(1.0f, 0.0f, 1.0f)) ? colour_1 : (tex_colour * colour_2);
-        frag_colour = target_colour;
+        final_colour = target_colour;
     }
     else if (draw_mode == 2)    // icon mode
     {
@@ -169,29 +181,24 @@ void main()
         vec4 tex_colour = texture(icon_atlas, (ic_uv + ic_off) / 8.0f);
 
         vec4 target_colour = (tex_colour.a > 0.5f) ? (tex_colour * colour_1) : colour_2;
-        frag_colour = target_colour;
+        final_colour = target_colour;
     }
 
-    const float dither_map_4[16] =
-    {
-        0,  8,  2, 10,
-        12,  4, 14,  6,
-        3, 11,  1,  9,
-        15,  7, 13,  5
-    };
+    
 
     if (dither_alpha)
     {
-        int layer = int(floor(position.z));
+        int layer = int(floor(z));
         float dither_value = dither_map_4[((screen_coord.x % 4) + ((screen_coord.y % 4) * 4) + layer) % 16] / 16.0f;
-        if (frag_colour.a < dither_value)
+        if (final_colour.a < dither_value)
             discard;
     }
     else
     {
-        if (frag_colour.a < 0.1f)
+        if (final_colour.a < 0.1f)
             discard;
     }
+    frag_colour = final_colour;
 }
 )";
 

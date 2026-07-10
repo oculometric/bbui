@@ -101,7 +101,8 @@ std::array<glm::vec2, 2> Transform::getRenderPositionAndSize()
 {
     if (modified)
     {
-        auto parent_data = owner.lock()->getParent()->transform.getRenderPositionAndSize();
+        auto parent_data = owner->getParent() ? owner->getParent()->transform.getRenderPositionAndSize()
+                                 : std::array<glm::vec2, 2>{ position, size };
         if (use_offsets)
         {
             glm::vec2 top_left_anchor_pos     = { 0, 0 };

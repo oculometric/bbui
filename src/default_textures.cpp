@@ -59,6 +59,7 @@ Style Style_t::getDefaultStyle()
     style->constants[CONST_BUTTON_AROUNDTEXT]          = 1.0f;
     style->constants[CONST_BUTTON_BETWEENICONTEXT]     = 4.0f;
     style->constants[CONST_BUTTON_AROUNDICON]          = 2.0f;
+    style->constants[CONST_BUTTON_CLICKOFFSET]         = 2.0f;
     style->constants[CONST_RADIOBUTTON_BETWEENOPTIONS] = 2.0f;
     style->constants[CONST_RADIOBUTTON_BETWEENTAGTEXT] = 8.0f;
     style->constants[CONST_PANEL_AROUNDCONTENT]        = 4.0f;

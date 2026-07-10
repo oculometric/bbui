@@ -134,11 +134,10 @@ enum CursorType : uint8_t
     CURSOR_MAX_ENUM   // invalid cursor type used for iterating the enum
 };
 
-
 class Surface
 {
 protected:
-    std::weak_ptr<class Window_t> owner;
+    std::weak_ptr<Window_t> owner;
 
 public:
     Surface(Window window) : owner(window) {}
@@ -192,11 +191,12 @@ private:
     std::unique_ptr<Surface> surface;
 
 public:
-    Window_t(const struct Texture& icon);
     Window_t()                                 = delete;
     Window_t(const Window_t& other)            = delete;
     Window_t& operator=(const Window_t& other) = delete;
     ~Window_t();
+
+    static Window create(const std::string& title, const Texture& icon);
 
     void setTitle(const std::string& title);
     glm::u32vec2 getSize() const { return current_frame_size; }
@@ -233,6 +233,8 @@ public:
     GLFWwindow* getWindow() const { return window; }
 
 private:
+    Window_t(const std::string& title, const Texture& icon);
+
     static void keyFunction(GLFWwindow* window, int key, int scancode, int action, int mods);
     static void charFunction(GLFWwindow* window, unsigned int codepoint);
     static void mouseFunction(GLFWwindow* window, int button, int action, int mods);

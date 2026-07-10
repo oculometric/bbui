@@ -61,12 +61,12 @@ void Renderer_t::draw(Window window)
     }
 
     bool source_modified = realloc_ocurred || !modified_primitives.empty();
-    for (const auto primitive_set : primitives)
+    for (const auto& primitive_set : primitives)
     {
         if (modified_primitives.contains(primitive_set.first) || realloc_ocurred)
         {
             auto geometry = primitive_set.second.first.lock()->getGeometry();
-            ensureBacking(primitive_set.first, geometry.size());
+            ensureBacking(primitive_set.first, geometry.size() / 4);
             memcpy(vertices.data() + primitive_set.second.second.vertex_start, geometry.data(),
                 geometry.size() * sizeof(Vertex));
         }
@@ -107,7 +107,7 @@ void Renderer_t::ensureBacking(uint64_t primitive_id, size_t capacity)
     {
         Index difference   = it->second.second.quad_count - capacity;
         Index first_vertex = it->second.second.vertex_start + (capacity * 4);
-        memset(vertices.data() + first_vertex, 0, difference * sizeof(Vertex));
+        memset(vertices.data() + first_vertex, 0, difference * 4 * sizeof(Vertex));
     }
     else if (capacity > it->second.second.quad_count)
     {
@@ -128,6 +128,7 @@ void Renderer_t::ensureBacking(uint64_t primitive_id, size_t capacity)
         it->second.second.quad_count = capacity;
         count                        = it->second.second.quad_count;
         first_vertex                 = it->second.second.vertex_start;
+        first_index                  = it->second.second.index_start;
         // TODO: necessary/inefficient?
         memset(vertices.data() + first_vertex, 0, (count * 4) * sizeof(Vertex));
         for (size_t i = first_index; i < first_index + (count * 6); i += 6)
@@ -138,6 +139,7 @@ void Renderer_t::ensureBacking(uint64_t primitive_id, size_t capacity)
             indices[i + 3] = first_vertex + 0;
             indices[i + 4] = first_vertex + 2;
             indices[i + 5] = first_vertex + 3;
+            first_vertex += 4;
         }
         modified_primitives.insert(primitive_id); // TODO: necessary/ineffcient?
     }

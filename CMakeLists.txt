@@ -113,3 +113,9 @@ add_custom_target(bbui_export
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:bbui> ${CMAKE_CURRENT_BINARY_DIR}/staging
     COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/staging ${CMAKE_COMMAND} -E tar cfv ${TAR_OUTPUT} --format=zip .
 )
+
+project(bbui_test)
+
+add_executable(bbui_test testmain.cpp)
+target_link_libraries(bbui_test PRIVATE bbui)
+set_property(TARGET bbui_test PROPERTY CXX_STANDARD 20)

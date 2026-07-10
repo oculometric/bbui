@@ -103,7 +103,7 @@ std::vector<Vertex> BBUI::IconPrimitive_t::getGeometry()
 {
     glm::vec2 p = position;
     return makeQuad(p, { p.x + size.x, p.y }, { p.x, p.y + size.y }, p + size, position.z, { 0, 0 },
-        { 1, 1 }, foreground, background, { 1, size, static_cast<float>(icon_index) }, { 0, 0, 0, 0 });
+        { 1, 1 }, foreground, background, { 2, size, static_cast<float>(icon_index) }, { 0, 0, 0, 0 });
 }
 
 void TextPrimitive_t::setForeground(glm::vec4 _foreground)
@@ -230,7 +230,7 @@ std::vector<Vertex> TextPrimitive_t::getGeometry()
             glm::vec2 bl = line_top_left + glm::vec2{ 0, char_size.y };
             glm::vec2 br = line_top_left + char_size;
 
-            if (format.flags & TEXT_FLAGS_CLIP && bl.y > size.y)
+            if ((format.flags & TEXT_FLAGS_CLIP) && bl.y > size.y)
             {
                 float subtract_amount_px = glm::min(char_size.y, bl.y - size.y);
                 float subtract_amount_uv = uv_to_pixels.y * subtract_amount_px;
@@ -239,7 +239,7 @@ std::vector<Vertex> TextPrimitive_t::getGeometry()
                 uv_br.y -= subtract_amount_uv;
             }
 
-            if (format.flags & TEXT_FLAGS_CLIP && tl.x < 0.0f)
+            if ((format.flags & TEXT_FLAGS_CLIP) && tl.x < 0.0f)
             {
                 float add_amount_px = glm::min(char_size.x, 0.0f - tl.x);
                 float add_amount_uv = uv_to_pixels.x * add_amount_px;
@@ -248,7 +248,7 @@ std::vector<Vertex> TextPrimitive_t::getGeometry()
                 uv_tl.x += add_amount_uv;
             }
 
-            if (format.flags & TEXT_FLAGS_CLIP && tr.x > size.x)
+            if ((format.flags & TEXT_FLAGS_CLIP) && tr.x > size.x)
             {
                 float subtract_amount_px = glm::min(char_size.x, tr.x - size.x);
                 float subtract_amount_uv = uv_to_pixels.x * subtract_amount_px;

@@ -12,7 +12,7 @@ static bool glad_inited = false;
 Surface_OpenGL::Surface_OpenGL(Window window) : Surface(window)
 {
     glfwMakeContextCurrent(window->getWindow());
-    if (glad_inited)
+    if (!glad_inited)
     {
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
             throw std::runtime_error("failed to initialize GLAD");

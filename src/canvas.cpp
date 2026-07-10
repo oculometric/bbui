@@ -5,7 +5,7 @@
 
 using namespace BBUI;
 
-Component_t::Component_t() { transform.owner = shared_from_this(); }
+Component_t::Component_t() { transform.owner = this; }
 
 glm::vec2 Component_t::localToCanvas(glm::vec2 point)
 { return point + transform.getRenderPositionAndSize()[0]; }
@@ -44,7 +44,7 @@ void Component_t::arrangeSelfAndChildren()
     if (transform.checkModified())
     {
         arrange();
-        for (auto& c : children) c->transform.setModified();
+        for (auto& c : children) c->markDirty();
 
         redraw();
     }
@@ -54,6 +54,7 @@ void Component_t::arrangeSelfAndChildren()
 Canvas_t::Canvas_t()
 {
     renderer = std::make_shared<Renderer_t>();
+    style    = Style_t::getDefaultStyle();
     root     = std::make_shared<Component_t>();
 }
 
@@ -207,7 +208,9 @@ void Canvas_t::draw(Window window)
 void Canvas_t::setStyle(Style new_style)
 {
     style = new_style;
+    // TODO: tell the renderer about the new style!
     renderer->clear();
+    for (auto& c : all_components) c->markDirty();
     arrangeComponents();
 }
 
@@ -226,8 +229,8 @@ void Canvas_t::clearSizeOverride()
 
 Component Canvas_t::insert(Component component, Component parent)
 {
+    if (!parent) parent = root;
     if (component->canvas.lock() && component->canvas.lock() != shared_from_this()) { return nullptr; }
-    if (component->canvas.lock() != shared_from_this()) { return nullptr; }
     if (!(component->canvas.lock()))
     {
         component->canvas = shared_from_this();
@@ -310,3 +313,7 @@ void Canvas_t::arrangeComponents()
     root->transform.setSize(size_override);
     root->arrangeSelfAndChildren();
 }
+
+Style Component_t::getStyle() const { return canvas.lock()->getStyle(); }
+
+Renderer Component_t::getRenderer() const { return canvas.lock()->getRenderer(); }
