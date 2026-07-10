@@ -211,7 +211,7 @@ public:
 
 private:
     void updateSelfAndChildren();
-    void redrawSelfAndChildren(); // TODO: overhaul this.
+    void redrawSelfAndChildren();
     void arrangeSelfAndChildren();
 };
 
