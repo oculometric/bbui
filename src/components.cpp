@@ -6,9 +6,9 @@ using namespace BBUI;
 
 void Button_t::redraw()
 {
-    if (!prim_text) prim_text = getRenderer()->addText();
     if (!prim_icon) prim_icon = getRenderer()->addIcon();
     if (!prim_box) prim_box = getRenderer()->addRect();
+    if (!prim_text) prim_text = getRenderer()->addText();
 
     const glm::vec2 position = transform.getRenderPositionAndSize()[0];
     const glm::vec2 size     = transform.getRenderPositionAndSize()[1];
@@ -34,8 +34,28 @@ void Button_t::redraw()
     prim_text->setText(button_text);
     prim_text->setFormat(getStyle()->getTextFormatting(Style_t::TEXT_BUTTON));
     // TODO: position/size text correctly
-    prim_text->setSize({ 30, 30 });
-    prim_text->setPosition({ 0, 0, 0.01f });
+    float text_spacing = getStyle()->getConstant(Style_t::CONST_BUTTON_AROUNDTEXT);
+    float text_space   = size.x - text_spacing;
+    float text_offset  = 0;
+    if (icon_name.empty())
+    {
+        text_space -= text_spacing;
+        text_offset += text_spacing;
+    }
+    else
+    {
+        float icon_spacing    = getStyle()->getConstant(Style_t::CONST_BUTTON_AROUNDICON);
+        float icon_size       = getStyle()->getConstant(Style_t::CONST_GENERIC_ICONSIZE);
+        float text_separation = getStyle()->getConstant(Style_t::CONST_BUTTON_BETWEENICONTEXT);
+        text_space -= icon_spacing;
+        text_space -= icon_size;
+        text_space -= text_separation;
+        text_offset += icon_spacing;
+        text_offset += icon_size;
+        text_offset += text_separation;
+    }
+    prim_text->setSize({ text_space, size.y - (text_spacing * 2) });
+    prim_text->setPosition({ text_offset, text_spacing, 0.01f });
 }
 
 void Button_t::mousePressed(InputButton button, glm::vec2 local_position)

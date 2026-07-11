@@ -184,19 +184,17 @@ void main()
         final_colour = target_colour;
     }
 
-    
-
     if (dither_alpha)
     {
         int layer = int(floor(z));
         float dither_value = dither_map_4[((screen_coord.x % 4) + ((screen_coord.y % 4) * 4) + layer) % 16] / 16.0f;
-        if (final_colour.a < dither_value)
+        if (final_colour.a <= dither_value)
             discard;
     }
     else
     {
         if (final_colour.a < 0.1f)
-            discard;
+           discard;
     }
     frag_colour = final_colour;
 }

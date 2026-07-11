@@ -218,7 +218,7 @@ public:
 
 protected:
     glm::vec4 foreground = { 1, 1, 1, 1 };
-    glm::vec4 background = { 0, 0, 0, 0 };
+    glm::vec4 background = { 1, 1, 1, 0 };
     std::string content;
     Format format;
 
@@ -299,9 +299,10 @@ private:
     std::map<uint64_t, std::pair<std::weak_ptr<Primitive_t>, BackingInternal>> primitives;
 
 public:
-    bool force_dithered_alpha = false;
-    bool pixel_perfect        = true;
+    bool force_dithered_alpha = true;
+    bool pixel_perfect        = true; // TODO: if enabled, snap all elements to pixels
     bool anti_alias           = true;
+    bool ensure_ordering      = false; // TODO: if enabled, enforce bottom up drawing
 
 public:
     Renderer_t();

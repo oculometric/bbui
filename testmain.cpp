@@ -13,7 +13,7 @@ int main()
     b->setIcon(BBUI::Style_t::ICON_CLOSE);
     b->setTooltip("this is a button");
     b->transform.setPosition({ 0, 0 });
-    b->transform.setSize({ 100, 100 });
+    b->transform.setSize({ 300, 300 });
 
     while (!w->shouldClose())
     {
